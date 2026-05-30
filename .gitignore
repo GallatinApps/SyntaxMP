@@ -1,0 +1,56 @@
+# Gradle / Kotlin
+.gradle/
+.kotlin/
+build/
+!src/**/build/
+local.properties
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store
+
+# AI / local planning
+plans/
+.codex/
+.claude/
+.junie/
+.agents/
+
+# Build outputs
+out/
+
+# Logs / diagnostics
+*.log
+*.hprof
+hs_err_pid*
+replay_pid*
+
+# Node / web tooling
+node_modules/
+
+# Android
+*.aab
+*.apk
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Android signing / local secrets
+*.jks
+*.keystore
+key.properties
+keystore.properties
+secrets.properties
+
+# Xcode / Apple
+xcuserdata/
+*.xcuserstate
+
+# Keep important Xcode project files tracked
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/xcshareddata/**
+!*.xcodeproj/project.xcworkspace/
+!*.xcodeproj/project.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/contents.xcworkspacedata
