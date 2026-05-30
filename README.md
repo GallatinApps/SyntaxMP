@@ -1,0 +1,307 @@
+<div align="center">
+
+# SyntaxMP
+
+**Kotlin Multiplatform syntax highlighting for Compose.**
+
+Purpose-built lexical tokenizers, role-based theming, and drop-in Compose text helpers. 54 built-in languages, no JS runtime, no regex grammars, no platform code.
+
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Compose Multiplatform](https://img.shields.io/badge/Compose-1.11.0-4285F4?logo=jetpackcompose&logoColor=white)](https://www.jetbrains.com/compose-multiplatform/)
+[![Platforms](https://img.shields.io/badge/Platforms-JVM%20%7C%20Android%20%7C%20iOS%20%7C%20Wasm-blue)](#)
+[![Demo](https://img.shields.io/badge/demo-demo.syntaxmp.com-blue)](https://demo.syntaxmp.com)
+[![Version](https://img.shields.io/badge/version-0.1.0--SNAPSHOT-orange)](#)
+
+</div>
+
+---
+
+## Contents
+
+- [Highlights](#highlights)
+- [Supported languages](#supported-languages)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Theming](#theming)
+- [Choosing a language subset](#choosing-a-language-subset)
+- [Adding your own language](#adding-your-own-language)
+- [Documentation](#documentation)
+- [FAQ](#faq)
+- [License](#license)
+
+---
+
+## Highlights
+
+- **Pure Kotlin / KMP-clean.** Common code only. No platform shims, no JS bridge, no native parsers, no regex grammars.
+- **Predictable token model.** Each token has one dotted `SyntaxRole` value (`keyword`, `keyword.control`, `variable.parameter`, ...), plus the non-null `SyntaxLanguageId` that produced it. Themes match roles with progressive parent fallback.
+- **Small, opinionated theme surface.** A `SyntaxStyle` is just color + weight + style. Host `TextStyle` owns font family, size, line height, base color, and backgrounds.
+- **No global state, no auto-detection.** You pass a raw language label such as `"kotlin"` or `"kt"`; the engine resolves built-in aliases and extension aliases. The engine is a pure function of `(code, languageLabel)`. Easy to test, safe to share.
+- **Primitives, not wrappers.** You compose `rememberSyntaxAnnotatedString` + `BasicText` for read-only views, or `buildSyntaxStyledSpans` + `applySyntaxStyledSpans` for `BasicTextField` editors. Engine and theme scoping is the host's choice.
+
+---
+
+## Supported languages
+
+54 built-in languages, all driven by shared scanners, scanner options, and explicit vocabulary inputs. Pass a language label such as a built-in id or any of the common aliases (`js`, `ts`, `tf`, `dotenv`, `kts`, `pgsql`, `sqlite3`, `htaccess`, ...).
+
+<table>
+  <tr>
+    <td valign="top">
+      • Apache config<br>
+      • Astro<br>
+      • C<br>
+      • C#<br>
+      • C++<br>
+      • CSS<br>
+      • CSV<br>
+      • Dart<br>
+      • Diff / patch<br>
+      • DNS zone files<br>
+      • Dockerfile<br>
+      • Elixir<br>
+      • GLSL<br>
+      • Go<br>
+    </td>
+    <td valign="top">
+      • GraphQL<br>
+      • Groovy / Gradle<br>
+      • HCL<br>
+      • HTML<br>
+      • INI / .env<br>
+      • Java<br>
+      • JavaScript<br>
+      • JSON<br>
+      • JSON5<br>
+      • JSX<br>
+      • Kotlin<br>
+      • Less<br>
+      • Lua<br>
+    </td>
+    <td valign="top">
+      • Makefile<br>
+      • Markdown<br>
+      • MDX<br>
+      • Objective-C<br>
+      • Perl<br>
+      • PHP<br>
+      • PostgreSQL<br>
+      • PowerShell<br>
+      • Protobuf<br>
+      • Python<br>
+      • R<br>
+      • Ruby<br>
+      • Rust<br>
+    </td>
+    <td valign="top">
+      • Scala<br>
+      • SCSS<br>
+      • Shell (POSIX)<br>
+      • SQL<br>
+      • SQLite<br>
+      • Svelte<br>
+      • Swift<br>
+      • Terraform<br>
+      • TOML<br>
+      • TSX<br>
+      • TypeScript<br>
+      • Vue<br>
+      • XML<br>
+      • YAML<br>
+    </td>
+  </tr>
+</table>
+
+Built-in language constants and the built-in set live on [`SyntaxLanguageId`](syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/language/SyntaxLanguageId.kt).
+
+**Embedded languages** are wired up internally for HTML script/style blocks, Markdown fenced code, and the script/style regions of JSX, TSX, MDX, Vue, Svelte, and Astro. See [docs/embedded-languages.md](docs/embedded-languages.md) for the full routing table and what's deliberately out of scope.
+
+---
+
+## Installation
+
+SyntaxMP targets **JVM**, **Android**, **iOS arm64**, **iOS simulator arm64**, and **web through Kotlin/Wasm**.
+
+### Version catalog (`gradle/libs.versions.toml`)
+
+```toml
+[versions]
+syntaxmpVersion = "0.1.0-SNAPSHOT"
+
+[libraries]
+syntaxmp = { module = "com.gallatinapps.syntaxmp:syntaxmp", version.ref = "syntaxmpVersion" }
+```
+
+### Module `build.gradle.kts`
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.syntaxmp)
+        }
+    }
+}
+```
+---
+
+## Quick start
+
+SyntaxMP has two Compose paths, depending on whether the text is displayed or editable.
+
+**Display highlighted text.** `rememberSyntaxAnnotatedString` builds an `AnnotatedString` you can drop into `BasicText`. The Composable handles its own `remember` chain, so theme changes restyle without retokenizing:
+
+```kotlin
+@Composable
+fun CodeSnippet(
+    code: String,
+    languageLabel: String?,
+    engine: SyntaxTokenizerEngine,
+    theme: SyntaxTheme,
+) {
+    BasicText(
+        text = rememberSyntaxAnnotatedString(
+            code = code,
+            languageLabel = languageLabel,
+            engine = engine,
+            theme = theme,
+        ),
+        style = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 14.sp),
+    )
+}
+```
+
+**Editable text.** `buildSyntaxStyledSpans` plus the `TextFieldBuffer.applySyntaxStyledSpans` extension drops into a `BasicTextField` `outputTransformation`:
+
+```kotlin
+@Composable
+fun CodeField(
+    state: TextFieldState,
+    languageLabel: String?,
+    engine: SyntaxTokenizerEngine,
+    theme: SyntaxTheme,
+) {
+    BasicTextField(
+        state = state,
+        outputTransformation = {
+            val code = asCharSequence().toString()
+            val tokens = engine.tokenize(code = code, languageLabel = languageLabel)
+            val spans = buildSyntaxStyledSpans(code = code, spans = tokens, theme = theme)
+            applySyntaxStyledSpans(spans)
+        },
+        textStyle = TextStyle(fontFamily = FontFamily.Monospace),
+    )
+}
+```
+
+Construct the engine once for the scope that owns your syntax configuration, and pass it through your app's existing wiring (a host-defined `staticCompositionLocalOf`, DI, or a one-surface `remember`). SyntaxMP deliberately doesn't ship that wiring.
+
+See [docs/building-an-editor.md](docs/building-an-editor.md) for engine sharing, line splitting, caching, and large-document guidance.
+
+---
+
+## Theming
+
+`SyntaxTheme.DefaultLight` and `SyntaxTheme.DefaultDark` are starter themes you can build on top of with the copy/override helpers, or you can build a theme from scratch.
+
+```kotlin
+val theme = SyntaxTheme.DefaultDark
+    .withRoleStyle(
+        role = SyntaxRole.Keyword,
+        style = SyntaxStyle(color = Color(0xFF7F52FF), fontWeight = FontWeight.Bold),
+    )
+    .withLanguageRoleStyle(
+        languageId = SyntaxLanguageId.Kotlin,
+        role = SyntaxRole.Variable.Parameter,
+        style = SyntaxStyle(color = Color(0xFF7DCFFF)),
+    )
+
+BasicText(
+    text = rememberSyntaxAnnotatedString(
+        code = code,
+        languageLabel = "kotlin",
+        engine = engine,
+        theme = theme,
+    ),
+    style = TextStyle(fontFamily = FontFamily.Monospace),
+)
+```
+
+See [docs/theming.md](docs/theming.md) for the full role tree, resolution policy, all four copy/override helpers, and worked per-language overrides.
+
+---
+
+## Choosing a language subset
+
+By default the engine enables all 54 built-ins. Shrink the surface (smaller construction cost, fewer code paths reachable) by passing a `Set<SyntaxLanguageId>`:
+
+```kotlin
+val enabledLanguages = setOf(
+    SyntaxLanguageId.Kotlin,
+    SyntaxLanguageId.Json,
+    SyntaxLanguageId.Markdown,
+    SyntaxLanguageId.Shell,
+)
+val engine = SyntaxTokenizerEngine(builtInLanguages = enabledLanguages)
+```
+
+Labels resolving to a disabled language return `emptyList()`. The engine never throws "unknown language."
+
+---
+
+## Adding your own language
+
+Implement `SyntaxTokenizer`, wrap it in a `SyntaxLanguageExtension`, register the extension on the engine, and your tokenizer runs alongside the built-ins:
+
+```kotlin
+val myql = SyntaxLanguageId.fromString("myql")
+
+val engine = SyntaxTokenizerEngine(
+    extensions = listOf(
+        SyntaxLanguageExtension(
+            languageId = myql,
+            aliases = setOf("mql"),
+            tokenizer = myqlTokenizer,
+        ),
+    ),
+)
+```
+
+Extensions resolve before built-ins, so you can override a built-in too. See [docs/language-extension.md](docs/language-extension.md) for full working examples.
+
+---
+
+## Documentation
+
+- [docs/architecture.md](docs/architecture.md): the pipeline a snippet travels through, where state lives, cross-platform posture, strengths and limits.
+- [docs/api.md](docs/api.md): per-symbol API reference for every public type, function, and extension SyntaxMP ships.
+- [docs/theming.md](docs/theming.md): the full theming reference. Role tree, resolution policy, copy/override helpers, per-language overrides.
+- [docs/syntax-roles.md](docs/syntax-roles.md): the roles primer. What a `SyntaxRole` is, the root and refinement constants, and how custom roles work.
+- [docs/languages.md](docs/languages.md): per-language catalog of every role each built-in tokenizer emits, plus aliases, `SyntaxLanguageId` constants, and embedded-language routing.
+- [docs/language-extension.md](docs/language-extension.md): adding a custom language via `SyntaxLanguageExtension`, with a worked tokenizer and a testing recipe.
+- [docs/building-an-editor.md](docs/building-an-editor.md): building an editable code surface with `BasicTextField`. Engine sharing, line splitting, caching, and large-document guidance.
+- [docs/embedded-languages.md](docs/embedded-languages.md): what SyntaxMP routes automatically for HTML, Markdown, JSX/TSX/MDX, Vue, Svelte, and Astro, and what it deliberately doesn't.
+
+---
+
+## FAQ
+
+**How does it know what language my code is?** It doesn't. You tell it. Pass a language label such as `"kotlin"` or `"kt"`, or get back no spans. Auto-detection is a separate problem with different correctness and performance tradeoffs, and is out of scope here.
+
+**What if the language isn't recognized?** The engine returns `emptyList()`. `rememberSyntaxAnnotatedString` short-circuits to a plain unstyled `AnnotatedString` when the label is `null` or blank, without ever invoking the engine. The engine itself never throws for unknown or unregistered languages.
+
+**Can I tokenize large files?** Yes, within limits, and the limit is usually Compose text rendering rather than SyntaxMP. Tokenization itself is fast: a single-pass, full-document lexical scan with no regex or grammar runtime. For read-only display (`rememberSyntaxAnnotatedString` + `BasicText`) that scales to large files. Editing is the real constraint: `BasicTextField` doesn't virtualize text layout, so every keystroke re-measures the whole document. That base layout cost is unavoidable, but the styling cost is not: applying styled spans only to the visible range and tokenizing off the main thread keep large editable documents usable. See [docs/building-an-editor.md](docs/building-an-editor.md) for windowing, off-thread tokenization, caching, and large-document guidance.
+
+**Token color looks wrong. Is that a bug?** Maybe. Scanners are heuristic. Before filing it, check (a) what `span.role.value` and `span.languageId.value` the wrong span actually got, and (b) whether the issue is the scanner choosing the wrong role, or the theme styling that role in an unexpected way. The fixes differ.
+
+**Why is `SyntaxStyle` so restrictive?** The narrow shape is deliberate. Color + weight + style covers the visual decisions that should live with the syntax theme; font family, size, line height, and surfaces belong with your app's design system. If you need full `SpanStyle` control for a token, resolve styles yourself from raw `SyntaxTokenSpan`s and skip the theme system.
+
+---
+
+## License
+
+Copyright 2026 Gallatin Applications LLC.
+
+SyntaxMP is licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).
+
+The demo app bundles JetBrains Mono font files under the SIL Open Font License, Version 1.1. See [syntaxmp-demo/THIRD_PARTY_NOTICES.md](syntaxmp-demo/THIRD_PARTY_NOTICES.md).
