@@ -2,7 +2,7 @@ package com.gallatinapps.syntaxmp.demo.panes
 
 internal val InstallationCatalogSample = """
 [versions]
-syntaxmp = "0.1.0-SNAPSHOT"
+syntaxmp = "0.1.0"
 
 [libraries]
 syntaxmp = { module = "com.gallatinapps.syntaxmp:syntaxmp", version.ref = "syntaxmp" }
@@ -142,4 +142,3 @@ val engine = SyntaxTokenizerEngine(
     ),
 )
 """.trimIndent()
-

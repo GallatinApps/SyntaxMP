@@ -10,7 +10,7 @@ Purpose-built lexical tokenizers, role-based theming, and drop-in Compose text h
 [![Compose Multiplatform](https://img.shields.io/badge/Compose-1.11.0-4285F4?logo=jetpackcompose&logoColor=white)](https://www.jetbrains.com/compose-multiplatform/)
 [![Platforms](https://img.shields.io/badge/Platforms-JVM%20%7C%20Android%20%7C%20iOS%20%7C%20Wasm-blue)](#)
 [![Demo](https://img.shields.io/badge/demo-demo.syntaxmp.com-blue)](https://demo.syntaxmp.com)
-[![Version](https://img.shields.io/badge/version-0.1.0--SNAPSHOT-orange)](#)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue)](#)
 
 </div>
 
@@ -31,6 +31,7 @@ Purpose-built lexical tokenizers, role-based theming, and drop-in Compose text h
 - [Adding your own language](#adding-your-own-language)
 - [Documentation](#documentation)
 - [FAQ](#faq)
+- [Changelog](#changelog)
 - [License](#license)
 
 ---
@@ -115,7 +116,7 @@ SyntaxMP targets **JVM**, **Android**, **iOS arm64**, **iOS simulator arm64**, a
 
 ```toml
 [versions]
-syntaxmpVersion = "0.1.0-SNAPSHOT"
+syntaxmpVersion = "0.1.0"
 
 [libraries]
 syntaxmp = { module = "com.gallatinapps.syntaxmp:syntaxmp", version.ref = "syntaxmpVersion" }
@@ -306,6 +307,12 @@ Maybe. Scanners are heuristic. Before filing it, check (a) what `span.role.value
 **Why is `SyntaxStyle` so restrictive?**
 
 The narrow shape is deliberate. Color + weight + style covers the visual decisions that should live with the syntax theme; font family, size, line height, and surfaces belong with your app's design system. If you need full `SpanStyle` control for a token, resolve styles yourself from raw `SyntaxTokenSpan`s and skip the theme system.
+
+---
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 

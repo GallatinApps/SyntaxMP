@@ -180,7 +180,7 @@ private fun InstallationSection(
         colors = colors,
     ) {
         BodyText(
-            text = "Add SyntaxMP to your version catalog, then depend on it from commonMain. The artifact is currently a SNAPSHOT while publication is finalized.",
+            text = "Add SyntaxMP to your version catalog, then depend on it from commonMain.",
             colors = colors,
         )
         CodeExample(

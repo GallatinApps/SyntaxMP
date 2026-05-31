@@ -1,0 +1,76 @@
+name: Publish
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      releaseTag:
+        description: Release tag to publish, for example v0.1.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.event.release.tag_name || inputs.releaseTag }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to Maven Central
+    runs-on: macos-latest
+
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.releaseTag }}
+      ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+      ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+      ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+      ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.releaseTag }}
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Validate release version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="$(grep -E 'version = "[^"]+"' build.gradle.kts | sed -E 's/.*version = "([^"]+)".*/\1/')"
+          tag_version="${RELEASE_TAG#v}"
+
+          if [[ -z "$version" ]]; then
+            echo "Could not read project version from build.gradle.kts."
+            exit 1
+          fi
+
+          if [[ "$version" == *-SNAPSHOT ]]; then
+            echo "Refusing to publish SNAPSHOT version: $version"
+            exit 1
+          fi
+
+          if [[ "$tag_version" != "$version" ]]; then
+            echo "Release tag $RELEASE_TAG does not match project version $version."
+            exit 1
+          fi
+
+      - name: Publish and release to Maven Central
+        run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
