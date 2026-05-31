@@ -4,7 +4,7 @@ import kotlinx.browser.window
 import org.w3c.dom.events.Event
 
 internal actual fun initialDemoRouteFromUrl(): DemoRoute? =
-    parseDemoHashRoute(window.location.hash) ?: cleanPathNotFoundRoute()
+    parseDemoHashRoute(window.location.hash) ?: cleanPathRoute()
 
 internal actual fun writeDemoRouteToUrl(route: DemoRoute?) {
     val targetHash = route?.toHashRoute().orEmpty()
@@ -27,9 +27,9 @@ internal actual fun observeDemoUrlRoutes(onRouteChanged: (DemoRoute?) -> Unit): 
     }
 }
 
-private fun cleanPathNotFoundRoute(): DemoRoute? {
+private fun cleanPathRoute(): DemoRoute? {
     val path = cleanPathWithSearch() ?: return null
-    return DemoRoute.NotFound(path)
+    return parseDemoPathRoute(path)
 }
 
 private fun isCleanPathRoute(): Boolean =

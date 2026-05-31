@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +41,7 @@ import com.gallatinapps.syntaxmp.demo.theme.toggled
 
 private const val SyntaxMpGitHubUrl = "https://github.com/GallatinApps/SyntaxMP"
 private const val SyntaxMpLicenseUrl = "https://github.com/GallatinApps/SyntaxMP/blob/main/LICENSE"
+private const val SyntaxMpContributingUrl = "https://github.com/GallatinApps/SyntaxMP/blob/main/CONTRIBUTING.md"
 private const val DemoThirdPartyNoticesUrl =
     "https://github.com/GallatinApps/SyntaxMP/blob/main/syntaxmp-demo/THIRD_PARTY_NOTICES.md"
 private const val JetBrainsMonoLicenseUrl =
@@ -85,11 +87,6 @@ internal fun GetStartedPane(
                 colors = colors,
                 engine = engine,
             )
-            RenderingSection(
-                mode = mode,
-                colors = colors,
-                engine = engine,
-            )
             ThemeSection(
                 mode = mode,
                 colors = colors,
@@ -101,16 +98,6 @@ internal fun GetStartedPane(
                 engine = engine,
             )
             CustomLanguageSection(
-                mode = mode,
-                colors = colors,
-                engine = engine,
-            )
-            RawTokenSection(
-                mode = mode,
-                colors = colors,
-                engine = engine,
-            )
-            CachingSection(
                 mode = mode,
                 colors = colors,
                 engine = engine,
@@ -169,9 +156,11 @@ private fun IntroSection(colors: DemoColorScheme) {
             text = "Kotlin Multiplatform syntax highlighting for Compose. SyntaxMP ships hand-written tokenizers, role-based themes, and Compose text helpers for JVM, Android, iOS, and Wasm.",
             colors = colors,
         )
+        BulletText("39 built-in languages.", colors)
         BulletText("Common Kotlin tokenizer engine with no platform parser bridge.", colors)
-        BulletText("Compose helpers for BasicText, TextField, caches, and custom renderers — no opinionated wrappers.", colors)
-        BulletText("39 built-in languages, including component formats with embedded script and style regions.", colors)
+        BulletText("Compose primitives for BasicText, BasicTextField, and custom renderers.", colors)
+        BulletText("Small, opinionated theme surface. Fully customizable for each role or language.", colors)
+
         DemoTextButton(
             label = "GitHub",
             colors = colors,
@@ -222,31 +211,7 @@ private fun QuickStartSection(
         colors = colors,
     ) {
         BodyText(
-            text = "Hand-write the engine, call rememberSyntaxAnnotatedString to get the tokenized text with the right remember keys, and drop the result into BasicText. Falls back to plain text for unknown or null labels.",
-            colors = colors,
-        )
-        CodeExample(
-            code = QuickStartSample,
-            language = "kotlin",
-            mode = mode,
-            colors = colors,
-            engine = engine,
-        )
-    }
-}
-
-@Composable
-private fun RenderingSection(
-    mode: DemoThemeMode,
-    colors: DemoColorScheme,
-    engine: SyntaxTokenizerEngine,
-) {
-    ContentSection(
-        title = "Custom Rendering",
-        colors = colors,
-    ) {
-        BodyText(
-            text = "Share one engine and build your own AnnotatedString when you need control over surrounding text style or layout.",
+            text = "For display-only code, use rememberSyntaxAnnotatedString with BasicText.",
             colors = colors,
         )
         CodeExample(
@@ -257,7 +222,7 @@ private fun RenderingSection(
             engine = engine,
         )
         BodyText(
-            text = "For editable code, decorate the TextField buffer instead of baking styles into the stored text. Keep the engine and theme next to the field so tokenization stays explicit.",
+            text = "For editable code, build styled spans from the engine output and apply them in a BasicTextField outputTransformation.",
             colors = colors,
         )
         CodeExample(
@@ -281,7 +246,7 @@ private fun ThemeSection(
         colors = colors,
     ) {
         BodyText(
-            text = "SyntaxMP themes only syntax roles: color, weight, and style. Fonts, line height, and backgrounds stay with your app design system.",
+            text = "DefaultLight and DefaultDark are starter themes, but most apps should define a theme that fits their own editor surface.",
             colors = colors,
         )
         CodeExample(
@@ -292,29 +257,11 @@ private fun ThemeSection(
             engine = engine,
         )
         BodyText(
-            text = "Role overrides let you tune specific dotted roles without creating new categories. Language overrides can retune the same role for one language family.",
+            text = "Language overrides can restyle the same role for one language family.",
             colors = colors,
-        )
-        CodeExample(
-            code = RoleOverrideSample,
-            language = "kotlin",
-            mode = mode,
-            colors = colors,
-            engine = engine,
         )
         CodeExample(
             code = PerLanguageThemeSample,
-            language = "kotlin",
-            mode = mode,
-            colors = colors,
-            engine = engine,
-        )
-        BodyText(
-            text = "SyntaxMP does not own a CompositionLocal. Apps that want subtree-wide theme threading can define one in their own UI layer.",
-            colors = colors,
-        )
-        CodeExample(
-            code = AppThemeLocalSample,
             language = "kotlin",
             mode = mode,
             colors = colors,
@@ -358,59 +305,11 @@ private fun CustomLanguageSection(
         colors = colors,
     ) {
         BodyText(
-            text = "Custom tokenizers produce SyntaxTokenSpan values, then register through SyntaxLanguageExtension. Extensions resolve before built-ins, so apps can add or override language ids.",
+            text = "Implement SyntaxTokenizer, wrap it in a SyntaxLanguageExtension, register the extension on the engine, and your tokenizer runs alongside the built-ins:",
             colors = colors,
         )
         CodeExample(
             code = CustomLanguageSample,
-            language = "kotlin",
-            mode = mode,
-            colors = colors,
-            engine = engine,
-        )
-    }
-}
-
-@Composable
-private fun RawTokenSection(
-    mode: DemoThemeMode,
-    colors: DemoColorScheme,
-    engine: SyntaxTokenizerEngine,
-) {
-    ContentSection(
-        title = "Working With Raw Tokens",
-        colors = colors,
-    ) {
-        BodyText(
-            text = "The engine output is pure data. Use it for tests, export pipelines, diagnostics, or any renderer that is not Compose text.",
-            colors = colors,
-        )
-        CodeExample(
-            code = RawTokenSample,
-            language = "kotlin",
-            mode = mode,
-            colors = colors,
-            engine = engine,
-        )
-    }
-}
-
-@Composable
-private fun CachingSection(
-    mode: DemoThemeMode,
-    colors: DemoColorScheme,
-    engine: SyntaxTokenizerEngine,
-) {
-    ContentSection(
-        title = "Caching",
-        colors = colors,
-    ) {
-        BodyText(
-            text = "SyntaxMP has no built-in cache. Tokenization is a pure function of code and language, so host apps can cache by language plus a content fingerprint.",
-            colors = colors,
-        )
-        CodeExample(
-            code = CachingSample,
             language = "kotlin",
             mode = mode,
             colors = colors,
@@ -436,8 +335,13 @@ private fun FaqSection(colors: DemoColorScheme) {
             colors = colors,
         )
         FaqItem(
-            question = "Can it tokenize huge files?",
-            answer = "Yes, but large editors should tokenize visible windows rather than the full file on every frame.",
+            question = "What if my language is not built in?",
+            answer = "Add project-local support with SyntaxLanguageExtension. For built-in requests, search issues first, then open one with the language, why it belongs, and examples. Built-ins stay focused on broadly useful languages.",
+            colors = colors,
+        )
+        FaqItem(
+            question = "Can it tokenize large files?",
+            answer = "Yes, but large editors should apply styling to visible windows rather than the full file on every frame.",
             colors = colors,
         )
         FaqItem(
@@ -463,11 +367,20 @@ private fun LicensingSection(colors: DemoColorScheme) {
             text = "This demo bundles JetBrains Mono Regular and Italic. JetBrains Mono is copyright 2020 The JetBrains Mono Project Authors and is licensed under the SIL Open Font License, Version 1.1.",
             colors = colors,
         )
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             DemoTextButton(
                 label = "Project License",
                 colors = colors,
                 onClick = { uriHandler.openUri(SyntaxMpLicenseUrl) },
+            )
+            DemoTextButton(
+                label = "Contributing",
+                colors = colors,
+                onClick = { uriHandler.openUri(SyntaxMpContributingUrl) },
             )
             DemoTextButton(
                 label = "Demo Notices",

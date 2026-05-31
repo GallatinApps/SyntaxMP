@@ -48,6 +48,7 @@ import com.gallatinapps.syntaxmp.demo.panes.SyntaxPreviewPane
 import com.gallatinapps.syntaxmp.demo.theme.DemoColorScheme
 import com.gallatinapps.syntaxmp.demo.theme.DemoThemeMode
 import com.gallatinapps.syntaxmp.demo.theme.colors
+import com.gallatinapps.syntaxmp.demo.theme.updateBrowserShellTheme
 
 private val WideLayoutMinWidth = 900.dp
 
@@ -75,6 +76,10 @@ internal fun SyntaxDemoApp() {
     val detailRoute = backStack.lastDetailRoute()
     val selectedDetailRoute = backStack.selectedDetailRouteOrNull()
     val selectedLanguage = backStack.selectedLanguageOrNull()
+
+    LaunchedEffect(themeMode) {
+        updateBrowserShellTheme(themeMode)
+    }
 
     LaunchedEffect(
         (detailRoute as? DemoRoute.LanguagePreview)?.routeSegment,
