@@ -18,7 +18,8 @@ kotlin {
 }
 """.trimIndent()
 
-internal val QuickStartSample = """
+
+internal val BasicTextSample = """
 @Composable
 fun CodeBlock(code: String, language: String) {
     val engine = remember { SyntaxTokenizerEngine() }
@@ -30,28 +31,6 @@ fun CodeBlock(code: String, language: String) {
             theme = SyntaxTheme.DefaultDark,
         ),
         style = TextStyle(fontFamily = FontFamily.Monospace),
-    )
-}
-""".trimIndent()
-
-internal val BasicTextSample = """
-@Composable
-fun CustomCodeBlock(code: String, languageLabel: String) {
-    val engine = remember { SyntaxTokenizerEngine() }
-    val theme = SyntaxTheme.DefaultDark
-    val spans = remember(engine, code, languageLabel) {
-        engine.tokenize(code = code, languageLabel = languageLabel)
-    }
-    val text = remember(code, spans, theme) {
-        buildSyntaxAnnotatedString(code = code, spans = spans, theme = theme)
-    }
-
-    BasicText(
-        text = text,
-        style = TextStyle(
-            fontFamily = FontFamily.Monospace,
-            fontSize = 14.sp,
-        ),
     )
 }
 """.trimIndent()
@@ -80,11 +59,8 @@ fun CodeField(state: TextFieldState, languageLabel: String) {
 """.trimIndent()
 
 internal val ThemeSample = """
-val myRoleStyles = SyntaxRoleStyles(
-    SyntaxRole.Keyword to SyntaxStyle(
-        color = Color(0xFF3B73D9),
-        fontWeight = FontWeight.SemiBold,
-    ),
+val roleStyles = SyntaxRoleStyles(
+    SyntaxRole.Keyword to SyntaxStyle(color = Color(0xFF3B73D9)),
     SyntaxRole.Operator to SyntaxStyle(color = Color(0xFF4B5563)),
     SyntaxRole.Punctuation to SyntaxStyle(color = Color(0xFF6B7280)),
     SyntaxRole.Function to SyntaxStyle(color = Color(0xFF6F42C1)),
@@ -100,7 +76,7 @@ val myRoleStyles = SyntaxRoleStyles(
     ),
 )
 
-val theme = SyntaxTheme(roleStyles = myRoleStyles)
+val theme = SyntaxTheme(roleStyles = roleStyles)
 BasicText(
     text = rememberSyntaxAnnotatedString(
         code = code,
@@ -112,39 +88,15 @@ BasicText(
 )
 """.trimIndent()
 
-internal val RoleOverrideSample = """
-val theme = SyntaxTheme.DefaultLight
-    .withRoleStyle(
-        SyntaxRole.Keyword.Control,
-        SyntaxStyle(
-            color = Color(0xFF0969DA),
-            fontWeight = FontWeight.Bold,
-        ),
-    )
-    .withRoleStyle(
-        SyntaxRole.Constant.Builtin.append("null"),
-        SyntaxStyle(
-            color = Color(0xFFB91C1C),
-            fontStyle = FontStyle.Italic,
-        ),
-    )
-""".trimIndent()
-
 internal val PerLanguageThemeSample = """
 val myTheme = SyntaxTheme(
     roleStyles = SyntaxTheme.DefaultDark.roleStyles,
     languageOverrides = mapOf(
         SyntaxLanguageId.Kotlin to SyntaxRoleStyles(
-            SyntaxRole.Keyword to SyntaxStyle(
-                color = Color(0xFF7F52FF),
-                fontWeight = FontWeight.Bold,
-            ),
+            SyntaxRole.Keyword to SyntaxStyle(color = Color(0xFF7F52FF)),
         ),
         SyntaxLanguageId.Python to SyntaxRoleStyles(
-            SyntaxRole.Keyword to SyntaxStyle(
-                color = Color(0xFF7DCFFF),
-                fontWeight = FontWeight.SemiBold,
-            ),
+            SyntaxRole.Keyword to SyntaxStyle(color = Color(0xFF7DCFFF)),
         ),
     ),
 )
@@ -176,84 +128,18 @@ val enabledLanguages = setOf(
 val engine = SyntaxTokenizerEngine(builtInLanguages = enabledLanguages)
 """.trimIndent()
 
-internal val RawTokenSample = """
-val engine = SyntaxTokenizerEngine()
-val code = "let x = 1"
-val spans = engine.tokenize(code = code, languageLabel = "js")
-
-for (span in spans) {
-    val text = code.substring(span.start, span.endExclusive)
-    println("${'$'}{span.languageId.value}/${'$'}{span.role.value}  ${'$'}text")
-}
-""".trimIndent()
 
 internal val CustomLanguageSample = """
 val myql = SyntaxLanguageId.fromString("myql")
-
-val myqlTokenizer = SyntaxTokenizer { request ->
-    val spans = mutableListOf<SyntaxTokenSpan>()
-    val code = request.code
-    var i = 0
-
-    while (i < code.length) {
-        when {
-            code.startsWith("--", i) -> {
-                val end = code.indexOf('\n', i).let {
-                    if (it == -1) code.length else it
-                }
-                spans += SyntaxTokenSpan(i, end, SyntaxRole.Comment, request.languageId)
-                i = end
-            }
-            code.startsWith("select", i, ignoreCase = true) -> {
-                spans += SyntaxTokenSpan(i, i + 6, SyntaxRole.Keyword, request.languageId)
-                i += 6
-            }
-            else -> i++
-        }
-    }
-
-    SyntaxTokenizeResult(spans)
-}
 
 val engine = SyntaxTokenizerEngine(
     extensions = listOf(
         SyntaxLanguageExtension(
             languageId = myql,
             aliases = setOf("mql"),
-            tokenizer = myqlTokenizer,
+            tokenizer = myqlTokenizer, //Create a custom Tokenizer
         ),
     ),
 )
 """.trimIndent()
 
-internal val CachingSample = """
-data class TokenizationKey(
-    val languageLabel: String?,
-    val codeHash: Int,
-    val codeLength: Int,
-)
-
-class TokenizationCache(private val maxEntries: Int) {
-    private val entries =
-        LinkedHashMap<TokenizationKey, List<SyntaxTokenSpan>>()
-
-    fun getOrPut(
-        key: TokenizationKey,
-        produce: () -> List<SyntaxTokenSpan>,
-    ): List<SyntaxTokenSpan> {
-        entries[key]?.let { return it }
-        val value = produce()
-        entries[key] = value
-        while (entries.size > maxEntries) {
-            entries.remove(entries.keys.first())
-        }
-        return value
-    }
-}
-
-val spans = cache.getOrPut(
-    TokenizationKey(languageLabel, code.hashCode(), code.length),
-) {
-    engine.tokenize(code = code, languageLabel = languageLabel)
-}
-""".trimIndent()

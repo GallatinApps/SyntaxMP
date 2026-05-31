@@ -14,6 +14,10 @@ Purpose-built lexical tokenizers, role-based theming, and drop-in Compose text h
 
 </div>
 
+<p align="center">
+  <a href="https://demo.syntaxmp.com/"><strong>→ Check Out The Web Demo! ←</strong></a>
+</p>
+
 ---
 
 ## Contents
@@ -187,19 +191,27 @@ See [docs/building-an-editor.md](docs/building-an-editor.md) for engine sharing,
 
 ## Theming
 
-`SyntaxTheme.DefaultLight` and `SyntaxTheme.DefaultDark` are starter themes you can build on top of with the copy/override helpers, or you can build a theme from scratch.
+`SyntaxTheme.DefaultLight` and `SyntaxTheme.DefaultDark` are starter themes, but most apps should define a theme that fits their own editor surface. SyntaxMP themes only syntax roles: color, optional weight, and optional style. Font family, size, line height, and backgrounds stay in your app's `TextStyle` and layout.
 
 ```kotlin
-val theme = SyntaxTheme.DefaultDark
-    .withRoleStyle(
-        role = SyntaxRole.Keyword,
-        style = SyntaxStyle(color = Color(0xFF7F52FF), fontWeight = FontWeight.Bold),
-    )
-    .withLanguageRoleStyle(
-        languageId = SyntaxLanguageId.Kotlin,
-        role = SyntaxRole.Variable.Parameter,
-        style = SyntaxStyle(color = Color(0xFF7DCFFF)),
-    )
+val roleStyles = SyntaxRoleStyles(
+    SyntaxRole.Keyword to SyntaxStyle(color = Color(0xFF3B73D9)),
+    SyntaxRole.Operator to SyntaxStyle(color = Color(0xFF4B5563)),
+    SyntaxRole.Punctuation to SyntaxStyle(color = Color(0xFF6B7280)),
+    SyntaxRole.Function to SyntaxStyle(color = Color(0xFF6F42C1)),
+    SyntaxRole.Type to SyntaxStyle(color = Color(0xFFB45309)),
+    SyntaxRole.Property to SyntaxStyle(color = Color(0xFF0F766E)),
+    SyntaxRole.String to SyntaxStyle(color = Color(0xFF2E7D5B)),
+    SyntaxRole.Number to SyntaxStyle(color = Color(0xFFAD3DA4)),
+    SyntaxRole.Tag to SyntaxStyle(color = Color(0xFF22863A)),
+    SyntaxRole.Attribute to SyntaxStyle(color = Color(0xFF6F42C1)),
+    SyntaxRole.Comment to SyntaxStyle(
+        color = Color(0xFF7A7F87),
+        fontStyle = FontStyle.Italic,
+    ),
+)
+
+val theme = SyntaxTheme(roleStyles = roleStyles)
 
 BasicText(
     text = rememberSyntaxAnnotatedString(
@@ -271,15 +283,29 @@ Extensions resolve before built-ins, so you can override a built-in too. See [do
 
 ## FAQ
 
-**How does it know what language my code is?** It doesn't. You tell it. Pass a language label such as `"kotlin"` or `"kt"`, or get back no spans. Auto-detection is a separate problem with different correctness and performance tradeoffs, and is out of scope here.
+**How does it know what language my code is?**
 
-**What if the language isn't recognized?** The engine returns `emptyList()`. `rememberSyntaxAnnotatedString` short-circuits to a plain unstyled `AnnotatedString` when the label is `null` or blank, without ever invoking the engine. The engine itself never throws for unknown or unregistered languages.
+It doesn't. You tell it. Pass a language label such as `"kotlin"` or `"kt"`, or get back no spans. Auto-detection is a separate problem with different correctness and performance tradeoffs, and is out of scope here.
 
-**Can I tokenize large files?** Yes, within limits, and the limit is usually Compose text rendering rather than SyntaxMP. Tokenization itself is fast: a single-pass, full-document lexical scan with no regex or grammar runtime. For read-only display (`rememberSyntaxAnnotatedString` + `BasicText`) that scales to large files. Editing is the real constraint: `BasicTextField` doesn't virtualize text layout, so every keystroke re-measures the whole document. That base layout cost is unavoidable, but the styling cost is not: applying styled spans only to the visible range and tokenizing off the main thread keep large editable documents usable. See [docs/building-an-editor.md](docs/building-an-editor.md) for windowing, off-thread tokenization, caching, and large-document guidance.
+**What if the language isn't recognized?**
 
-**Token color looks wrong. Is that a bug?** Maybe. Scanners are heuristic. Before filing it, check (a) what `span.role.value` and `span.languageId.value` the wrong span actually got, and (b) whether the issue is the scanner choosing the wrong role, or the theme styling that role in an unexpected way. The fixes differ.
+The engine returns `emptyList()`. `rememberSyntaxAnnotatedString` falls back to a plain unstyled `AnnotatedString` when the label is `null` or blank, without ever invoking the engine. The engine itself never throws for unknown or unregistered languages.
 
-**Why is `SyntaxStyle` so restrictive?** The narrow shape is deliberate. Color + weight + style covers the visual decisions that should live with the syntax theme; font family, size, line height, and surfaces belong with your app's design system. If you need full `SpanStyle` control for a token, resolve styles yourself from raw `SyntaxTokenSpan`s and skip the theme system.
+**My language isn't supported. What should I do?**
+
+You can add project-local support with `SyntaxLanguageExtension`, including aliases and overrides for built-ins. If you want a language added as a built-in, search existing issues first. If there is no issue, open one with the language name, why it belongs in the built-in set, common labels or extensions, and a few representative snippets that should highlight well. PRs are welcome, especially when they start from a working extension, but built-in additions are not guaranteed: the core set stays focused on broadly useful languages so the library remains maintainable.
+
+**Can I tokenize large files?**
+
+Yes, within limits, and the limit is usually Compose text rendering rather than SyntaxMP. Tokenization itself is fast: a single-pass, full-document lexical scan with no regex or grammar runtime. For read-only display (`rememberSyntaxAnnotatedString` + `BasicText`) that scales to large files. Editing is the real constraint: `BasicTextField` doesn't virtualize text layout, so every keystroke re-measures the whole document. That base layout cost is unavoidable, but the styling cost is not: applying styled spans only to the visible range and tokenizing off the main thread keep large editable documents usable. See [docs/building-an-editor.md](docs/building-an-editor.md) for windowing, off-thread tokenization, caching, and large-document guidance.
+
+**Token color looks wrong. Is that a bug?**
+
+Maybe. Scanners are heuristic. Before filing it, check (a) what `span.role.value` and `span.languageId.value` the wrong span actually got, and (b) whether the issue is the scanner choosing the wrong role, or the theme styling that role in an unexpected way. The fixes differ.
+
+**Why is `SyntaxStyle` so restrictive?**
+
+The narrow shape is deliberate. Color + weight + style covers the visual decisions that should live with the syntax theme; font family, size, line height, and surfaces belong with your app's design system. If you need full `SpanStyle` control for a token, resolve styles yourself from raw `SyntaxTokenSpan`s and skip the theme system.
 
 ---
 

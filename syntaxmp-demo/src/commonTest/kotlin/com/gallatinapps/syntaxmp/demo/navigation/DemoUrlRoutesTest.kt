@@ -30,6 +30,30 @@ internal class DemoUrlRoutesTest {
     }
 
     @Test
+    fun cleanLanguagePathParsesThroughCatalog() {
+        assertEquals(DemoRoute.LanguagePreview("kotlin"), parseDemoPathRoute("/lang/kotlin"))
+        assertEquals(DemoRoute.LanguagePreview("typescript"), parseDemoPathRoute("/lang/ts"))
+        assertEquals(
+            DemoRoute.LanguagePreview("javascript"),
+            parseDemoPathRoute("/lang/javascript?theme=dark"),
+        )
+    }
+
+    @Test
+    fun unsupportedCleanLanguagePathParsesToNotFoundRoute() {
+        val route = assertIs<DemoRoute.NotFound>(parseDemoPathRoute("/lang/groovy"))
+
+        assertEquals("/lang/groovy", route.originalPath)
+    }
+
+    @Test
+    fun rootCleanPathsUseIndexRoute() {
+        assertNull(parseDemoPathRoute("/"))
+        assertNull(parseDemoPathRoute("/index.html"))
+        assertNull(parseDemoPathRoute("/404.html"))
+    }
+
+    @Test
     fun unknownHashParsesToNotFoundRoute() {
         val route = assertIs<DemoRoute.NotFound>(parseDemoHashRoute("#/lang/swifts"))
 

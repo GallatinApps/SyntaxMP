@@ -8,15 +8,16 @@
         (function () {
             var simulatedPath = new URLSearchParams(window.location.search).get("path");
             var actualPath = window.location.pathname === "/404.html"
-                ? "/"
+                ? "/404"
                 : window.location.pathname + window.location.search;
             var path = simulatedPath || actualPath;
-            if (path && path.charAt(0) !== "/") {
+            if (!path || path === "/" || path === "/404.html") {
+                path = "/404";
+            }
+            if (path.charAt(0) !== "/") {
                 path = "/" + path;
             }
-            var target = path && path !== "/" && path !== "/404.html"
-                ? "/#/404" + path
-                : "/#/404";
+            var target = "/#" + path;
             window.location.replace(target);
         }());
     </script>

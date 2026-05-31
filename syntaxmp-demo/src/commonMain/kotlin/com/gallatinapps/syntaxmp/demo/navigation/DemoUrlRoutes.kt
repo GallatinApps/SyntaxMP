@@ -12,6 +12,19 @@ internal fun parseDemoHashRoute(rawHash: String): DemoRoute? {
     val path = rawHash
         .removePrefix("#")
         .normalizedHashPath()
+    return parseDemoPath(path)
+}
+
+internal fun parseDemoPathRoute(rawPath: String): DemoRoute? {
+    val path = rawPath.normalizedHashPath()
+    return if (path == "/index.html" || path == "/404.html") {
+        null
+    } else {
+        parseDemoPath(path)
+    }
+}
+
+private fun parseDemoPath(path: String): DemoRoute? {
     if (path == "/") {
         return null
     }
