@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxRoleStyles
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxStyle
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 
 internal enum class DemoThemeMode {
@@ -42,14 +42,14 @@ internal fun DemoThemeMode.syntaxTheme(colors: DemoColorScheme): SyntaxTheme {
     return baseTheme.copy(
         roleStyles = roleStyles,
         languageOverrides = baseTheme.languageOverrides + mapOf(
-            SyntaxLanguageId.Kotlin to kotlinSyntaxRoleStyles(roleStyles, colors),
-            SyntaxLanguageId.Csv to SyntaxRoleStyles(
+            LanguageId.Kotlin to kotlinSyntaxRoleStyles(roleStyles, colors),
+            LanguageId.Csv to SyntaxRoleStyles(
                 SyntaxRole.Punctuation to SyntaxStyle(
                     color = colors.accent,
                     fontWeight = FontWeight.SemiBold,
                 ),
             ),
-            SyntaxLanguageId.Diff to diffSyntaxRoleStyles(),
+            LanguageId.Diff to diffSyntaxRoleStyles(),
         ),
     )
 }

@@ -1,12 +1,11 @@
 package com.gallatinapps.syntaxmp.languages.fixtures.html
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageExtension
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageExtension
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
 import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
 import com.gallatinapps.syntaxmp.languages.fixtures.assertNoTokenAt
 import com.gallatinapps.syntaxmp.languages.fixtures.assertTokenAt
 import kotlin.test.Test
@@ -121,25 +120,24 @@ class HtmlFixtureTest {
 
     @Test
     fun `raw text lang can route through extension aliases`() {
-        val language = SyntaxLanguageId.fromString("my-script")
+        val language = LanguageId.fromString("my-script")
         val code = """<script lang="myjs">customCall()</script>"""
-        val engine = SyntaxTokenizerEngine(
+        val engine = SyntaxTokenizer(
             extensions = listOf(
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = language,
                     aliases = setOf("myjs"),
-                    tokenizer = SyntaxTokenizer { request ->
+                    tokenizer = LanguageTokenizer { request ->
                         val start = request.code.indexOf("customCall")
-                        SyntaxTokenizeResult(
-                            spans = listOf(
+
+                            listOf(
                                 SyntaxTokenSpan(
                                     start = start,
                                     endExclusive = start + "customCall".length,
                                     role = SyntaxRole.Function,
                                     languageId = request.languageId,
                                 ),
-                            ),
-                        )
+                            )
                     },
                 ),
             ),
@@ -147,7 +145,7 @@ class HtmlFixtureTest {
         val start = code.indexOf("customCall")
 
         assertTrue(
-            actual = engine.tokenize(code = code, languageLabel = SyntaxLanguageId.Html.value).any { token ->
+            actual = engine.tokenize(code = code, languageLabel = LanguageId.Html.value).any { token ->
                 token.start == start &&
                     token.endExclusive == start + "customCall".length &&
                     token.role == SyntaxRole.Function &&
@@ -228,8 +226,8 @@ class HtmlFixtureTest {
         code = "<script>let x = 1;</script>",
         substring = "let",
         category = "Keyword",
-        engine = SyntaxTokenizerEngine(
-            builtInLanguages = setOf(SyntaxLanguageId.Html),
+        engine = SyntaxTokenizer(
+            builtInLanguages = setOf(LanguageId.Html),
         ),
     )
 
@@ -239,8 +237,8 @@ class HtmlFixtureTest {
         code = """<script lang="ts">const value: number = 1;</script>""",
         substring = "const",
         category = "Keyword",
-        engine = SyntaxTokenizerEngine(
-            builtInLanguages = setOf(SyntaxLanguageId.Html, SyntaxLanguageId.JavaScript),
+        engine = SyntaxTokenizer(
+            builtInLanguages = setOf(LanguageId.Html, LanguageId.JavaScript),
         ),
     )
 

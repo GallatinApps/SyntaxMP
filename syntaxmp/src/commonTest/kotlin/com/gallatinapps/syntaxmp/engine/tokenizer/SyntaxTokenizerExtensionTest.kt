@@ -1,21 +1,21 @@
 package com.gallatinapps.syntaxmp.engine.tokenizer
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageExtension
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageExtension
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class SyntaxTokenizerEngineExtensionTest {
+class SyntaxTokenizerExtensionTest {
     @Test
     fun extensionLanguageWinsBeforeBuiltInRoute() {
         val first = tokenizerWithRole(SyntaxRole.String)
         val engine = testEngine(
             extensions = listOf(
-                SyntaxLanguageExtension(
-                    languageId = SyntaxLanguageId.Kotlin,
+                LanguageExtension(
+                    languageId = LanguageId.Kotlin,
                     tokenizer = first,
                 ),
             ),
@@ -24,16 +24,16 @@ class SyntaxTokenizerEngineExtensionTest {
         val result = engine.tokenize("value", "kotlin")
 
         assertEquals(SyntaxRole.String, result.single().role)
-        assertEquals(SyntaxLanguageId.Kotlin, result.single().languageId)
+        assertEquals(LanguageId.Kotlin, result.single().languageId)
     }
 
     @Test
     fun extensionEmptyResultIsSticky() {
         val engine = testEngine(
             extensions = listOf(
-                SyntaxLanguageExtension(
-                    languageId = SyntaxLanguageId.Kotlin,
-                    tokenizer = SyntaxTokenizer { SyntaxTokenizeResult() },
+                LanguageExtension(
+                    languageId = LanguageId.Kotlin,
+                    tokenizer = LanguageTokenizer { emptyList() },
                 ),
             ),
         )
@@ -45,10 +45,10 @@ class SyntaxTokenizerEngineExtensionTest {
 
     @Test
     fun aliasesCreateTopLevelRoutes() {
-        val customLanguage = SyntaxLanguageId.fromString("custom")
+        val customLanguage = LanguageId.fromString("custom")
         val engine = testEngine(
             extensions = listOf(
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = customLanguage,
                     aliases = setOf("query"),
                     tokenizer = tokenizerWithRole(SyntaxRole.Keyword),
@@ -64,11 +64,11 @@ class SyntaxTokenizerEngineExtensionTest {
 
     @Test
     fun builtInAliasesAreFilteredByEnabledLanguagesButExtensionsAreNot() {
-        val engine = SyntaxTokenizerEngine(
-            builtInLanguages = setOf(SyntaxLanguageId.Kotlin),
+        val engine = SyntaxTokenizer(
+            builtInLanguages = setOf(LanguageId.Kotlin),
             extensions = listOf(
-                SyntaxLanguageExtension(
-                    languageId = SyntaxLanguageId.Java,
+                LanguageExtension(
+                    languageId = LanguageId.Java,
                     tokenizer = tokenizerWithRole(SyntaxRole.String),
                 ),
             ),

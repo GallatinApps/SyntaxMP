@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.engine.scanners.script
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.primitives.strings.StringLiteralScope
 import com.gallatinapps.syntaxmp.engine.primitives.strings.StringLiteralRequest
 import com.gallatinapps.syntaxmp.engine.primitives.strings.StringLiteralScanner
@@ -14,7 +14,7 @@ import com.gallatinapps.syntaxmp.engine.primitives.BlockCommentOptions
 
 internal class ScriptLikeScanner(
     override val code: String,
-    private val language: SyntaxLanguageId,
+    private val language: LanguageId,
     private val keywordRoles: LexemeRoleMap = emptyMap(),
     private val constants: Set<String> = emptySet(),
     private val typeKeywords: Set<String> = emptySet(),

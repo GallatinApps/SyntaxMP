@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.languages.python
 
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
+import com.gallatinapps.syntaxmp.engine.tokenizer.TokenizeRequest
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.primitives.QualifiedNameOptions
 import com.gallatinapps.syntaxmp.engine.scanners.script.ScriptLikeScanner
@@ -14,8 +14,9 @@ import com.gallatinapps.syntaxmp.engine.primitives.strings.PercentFormatSpecifie
 import com.gallatinapps.syntaxmp.engine.primitives.strings.PrefixedQuotedStringRule
 import com.gallatinapps.syntaxmp.engine.primitives.strings.QuotedStringRule
 import com.gallatinapps.syntaxmp.engine.primitives.strings.TripleQuotedStringRule
+import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
-internal object PythonTokenizer {
+internal object PythonTokenizer : LanguageTokenizer {
     private val stringFormats = listOf(PercentFormatSpecifierRule)
     private val scannerOptions = ScriptLikeScannerOptions(
         qualifiedNames = QualifiedNameOptions.after(
@@ -66,15 +67,13 @@ internal object PythonTokenizer {
         ),
     )
 
-    fun tokenize(request: SyntaxTokenizeRequest): SyntaxTokenizeResult =
-        SyntaxTokenizeResult(
-            ScriptLikeScanner(
-                code = request.code,
-                language = request.languageId,
-                keywordRoles = PythonKeywordRoles,
-                constants = PythonConstants,
-                builtinRoles = PythonBuiltinRoles,
-                options = scannerOptions,
-            ).scan(),
-        )
+    override fun tokenize(request: TokenizeRequest): List<SyntaxTokenSpan> =
+        ScriptLikeScanner(
+            code = request.code,
+            language = request.languageId,
+            keywordRoles = PythonKeywordRoles,
+            constants = PythonConstants,
+            builtinRoles = PythonBuiltinRoles,
+            options = scannerOptions,
+        ).scan()
 }

@@ -1,18 +1,18 @@
 package com.gallatinapps.syntaxmp.engine.scanners.markup
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.primitives.findBraceBalancedEnd
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.appendEmbeddedSpans
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
+import com.gallatinapps.syntaxmp.engine.tokenizer.TokenizeRequest
 
 internal class MarkupScanner(
-    private val request: SyntaxTokenizeRequest,
+    private val request: TokenizeRequest,
     private val options: MarkupScannerOptions = MarkupScannerOptions(),
 ) {
     private val code: String = request.code
-    private val language: SyntaxLanguageId = request.languageId
+    private val language: LanguageId = request.languageId
     private val tokens = mutableListOf<SyntaxTokenSpan>()
     private var markupDepth = 0
 
@@ -95,7 +95,7 @@ internal class MarkupScanner(
     }
 
     private fun scanFrontMatter(
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
         endExclusive: Int,
     ): Int {
         if (!startsWith(0, "---", endExclusive)) return 0

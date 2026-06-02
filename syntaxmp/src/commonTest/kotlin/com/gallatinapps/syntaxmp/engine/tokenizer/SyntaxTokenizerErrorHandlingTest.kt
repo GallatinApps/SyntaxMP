@@ -1,19 +1,19 @@
 package com.gallatinapps.syntaxmp.engine.tokenizer
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageExtension
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageExtension
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-class SyntaxTokenizerEngineErrorHandlingTest {
+class SyntaxTokenizerErrorHandlingTest {
     @Test
     fun extensionThrowableReturnsEmptySpans() {
         val engine = testEngine(
             extensions = listOf(
-                SyntaxLanguageExtension(
-                    languageId = SyntaxLanguageId.Kotlin,
-                    tokenizer = SyntaxTokenizer { throw Throwable("boom") },
+                LanguageExtension(
+                    languageId = LanguageId.Kotlin,
+                    tokenizer = LanguageTokenizer { throw Throwable("boom") },
                 ),
             ),
         )

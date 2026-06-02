@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.benchmarks
 
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -96,7 +96,7 @@ internal object KotlinHotPathProfiler {
         target: KotlinProfileTarget,
         reportDir: Path,
     ): KotlinProfileResult {
-        val engine = SyntaxTokenizerEngine()
+        val engine = SyntaxTokenizer()
         repeat(target.warmupIterations) {
             val spans = engine.tokenize(code = target.sample.code, languageLabel = target.sample.languageLabel)
             BenchmarkSink.consume(checksumTokenSpans(target.sample.code, spans))
@@ -330,7 +330,7 @@ private enum class ProfileCategory(
     LanguageRouting(
         displayName = "Language label/routing",
         matcher = {
-            it.className.contains(".engine.tokenizer.SyntaxTokenizerEngine") ||
+            it.className.contains(".engine.tokenizer.SyntaxTokenizer") ||
                 it.className.contains(".engine.routing.") ||
                 it.className.contains(".engine.language.")
         },

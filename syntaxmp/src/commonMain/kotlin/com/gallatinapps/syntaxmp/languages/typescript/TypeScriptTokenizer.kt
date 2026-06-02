@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.languages.typescript
 
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
+import com.gallatinapps.syntaxmp.engine.tokenizer.TokenizeRequest
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.primitives.numbers.ConfigurableNumberScanner
 import com.gallatinapps.syntaxmp.engine.primitives.numbers.OctalMode
@@ -14,8 +14,9 @@ import com.gallatinapps.syntaxmp.engine.primitives.strings.EscapeMode
 import com.gallatinapps.syntaxmp.engine.primitives.strings.StringLiteralOptions
 import com.gallatinapps.syntaxmp.engine.primitives.strings.QuotedStringRule
 import com.gallatinapps.syntaxmp.engine.primitives.strings.RegexLiteralOptions
+import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
-internal object TypeScriptTokenizer {
+internal object TypeScriptTokenizer : LanguageTokenizer {
     private val numberScanner = ConfigurableNumberScanner(
         allowHex = true,
         allowBinary = true,
@@ -44,15 +45,13 @@ internal object TypeScriptTokenizer {
         ),
     )
 
-    fun tokenize(request: SyntaxTokenizeRequest): SyntaxTokenizeResult =
-        SyntaxTokenizeResult(
-            CLikeScanner(
-                code = request.code,
-                language = request.languageId,
-                keywordRoles = TypeScriptKeywordRoles,
-                constants = TypeScriptConstants,
-                builtinRoles = TypeScriptBuiltinRoles,
-                options = scannerOptions,
-            ).scan(),
-        )
+    override fun tokenize(request: TokenizeRequest): List<SyntaxTokenSpan> =
+        CLikeScanner(
+            code = request.code,
+            language = request.languageId,
+            keywordRoles = TypeScriptKeywordRoles,
+            constants = TypeScriptConstants,
+            builtinRoles = TypeScriptBuiltinRoles,
+            options = scannerOptions,
+        ).scan()
 }

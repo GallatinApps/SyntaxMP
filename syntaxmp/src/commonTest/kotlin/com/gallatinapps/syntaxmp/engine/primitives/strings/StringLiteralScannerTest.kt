@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.engine.primitives.strings
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 import com.gallatinapps.syntaxmp.engine.primitives.isIdentifierPart
@@ -118,7 +118,7 @@ private object AtSignInterpolationRule : InterpolationRule {
 
 internal class TestLiteralContext(
     override val code: String,
-    val language: SyntaxLanguageId = SyntaxLanguageId.fromString("test"),
+    val language: LanguageId = LanguageId.fromString("test"),
 ) : StringLiteralScope {
     val tokens = mutableListOf<SyntaxTokenSpan>()
 

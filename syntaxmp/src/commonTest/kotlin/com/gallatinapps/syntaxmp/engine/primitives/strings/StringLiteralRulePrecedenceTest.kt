@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.engine.primitives.strings
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 import com.gallatinapps.syntaxmp.engine.scanners.markup.MarkupExpressionMarker
@@ -23,7 +23,7 @@ class StringLiteralRulePrecedenceTest {
     @Test
     fun `component expression rules order double mustache before single brace`() {
         val profile = MarkupScannerOptions(
-            expressionLanguage = SyntaxLanguageId.fromString("test"),
+            expressionLanguage = LanguageId.fromString("test"),
             expressionRules = listOf(
                 MarkupExpressionRule(
                     opener = "{",

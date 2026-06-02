@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.benchmarks.fixtures
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import java.util.Locale
 
 internal object LanguageBenchmarkFixtureSelfCheck {
@@ -68,7 +68,7 @@ internal object LanguageBenchmarkFixtureSelfCheck {
         }
 
         val coveredLanguageLabels = LanguageBenchmarkCatalog.fixtures.map { it.languageLabel }.toSet()
-        val missingLanguageLabels = SyntaxLanguageId.BuiltIns.map { it.value }.toSet() - coveredLanguageLabels
+        val missingLanguageLabels = LanguageId.BuiltIns.map { it.value }.toSet() - coveredLanguageLabels
         check(missingLanguageLabels.isEmpty()) {
             "Representative fixtures missing built-in language labels: $missingLanguageLabels"
         }
@@ -98,4 +98,4 @@ private val ExpectedOneX = """
     fun done(): Unit = Unit
 """.trimIndent()
 
-private val ExpectedFixtureCount = SyntaxLanguageId.BuiltIns.size + 1
+private val ExpectedFixtureCount = LanguageId.BuiltIns.size + 1

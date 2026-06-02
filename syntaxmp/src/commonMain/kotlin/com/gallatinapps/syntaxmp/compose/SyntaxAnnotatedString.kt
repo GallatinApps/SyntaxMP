@@ -5,7 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.text.AnnotatedString
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
 
 /**
  * Builds an [AnnotatedString] by applying syntax styles to [code].
@@ -55,7 +55,7 @@ public fun buildSyntaxAnnotatedString(
 public fun rememberSyntaxAnnotatedString(
     code: String,
     languageLabel: String?,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
     theme: SyntaxTheme,
 ): AnnotatedString {
     if (languageLabel.isNullOrBlank()) {

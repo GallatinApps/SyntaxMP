@@ -9,7 +9,7 @@ import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
  * A token span with its theme-resolved [SpanStyle].
  *
  * Distinct from [SyntaxTokenSpan]: a `SyntaxTokenSpan` is the raw engine
- * output and carries a `SyntaxRole` and `SyntaxLanguageId`. It is
+ * output and carries a `SyntaxRole` and `LanguageId`. It is
  * theme-independent and cacheable. A `SyntaxStyledSpan` is that span after a
  * [SyntaxTheme] has resolved its role to a concrete Compose [SpanStyle],
  * ready to apply to text.

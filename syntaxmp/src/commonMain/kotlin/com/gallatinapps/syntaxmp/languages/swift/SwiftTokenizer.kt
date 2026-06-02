@@ -1,8 +1,8 @@
 package com.gallatinapps.syntaxmp.languages.swift
 
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.TokenizeRequest
 import com.gallatinapps.syntaxmp.engine.primitives.numbers.ConfigurableNumberScanner
 import com.gallatinapps.syntaxmp.engine.primitives.numbers.OctalMode
 import com.gallatinapps.syntaxmp.engine.scanners.clike.AnnotationOptions
@@ -16,8 +16,9 @@ import com.gallatinapps.syntaxmp.engine.primitives.strings.HashWrappedStringRule
 import com.gallatinapps.syntaxmp.engine.primitives.strings.StringLiteralOptions
 import com.gallatinapps.syntaxmp.engine.primitives.strings.QuotedStringRule
 import com.gallatinapps.syntaxmp.engine.primitives.strings.TripleQuotedStringRule
+import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
-internal object SwiftTokenizer {
+internal object SwiftTokenizer : LanguageTokenizer {
     private val numberScanner = ConfigurableNumberScanner(
         allowHex = true,
         allowBinary = true,
@@ -70,15 +71,13 @@ internal object SwiftTokenizer {
         numbers = numberScanner,
     )
 
-    fun tokenize(request: SyntaxTokenizeRequest): SyntaxTokenizeResult =
-        SyntaxTokenizeResult(
-            CLikeScanner(
-                code = request.code,
-                language = request.languageId,
-                keywordRoles = SwiftKeywordRoles,
-                constants = SwiftConstants,
-                builtinRoles = SwiftBuiltinRoles,
-                options = scannerOptions,
-            ).scan(),
-        )
+    override fun tokenize(request: TokenizeRequest): List<SyntaxTokenSpan> =
+        CLikeScanner(
+            code = request.code,
+            language = request.languageId,
+            keywordRoles = SwiftKeywordRoles,
+            constants = SwiftConstants,
+            builtinRoles = SwiftBuiltinRoles,
+            options = scannerOptions,
+        ).scan()
 }

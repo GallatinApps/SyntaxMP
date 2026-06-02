@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.remember
 import com.gallatinapps.syntaxmp.compose.rememberSyntaxAnnotatedString
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
 import com.gallatinapps.syntaxmp.demo.components.DemoTextButton
 import com.gallatinapps.syntaxmp.demo.components.DemoThemeToggleButton
 import com.gallatinapps.syntaxmp.demo.theme.DemoColorScheme
@@ -55,7 +55,7 @@ internal fun GetStartedPane(
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
 ) {
-    val engine = remember { SyntaxTokenizerEngine() }
+    val engine = remember { SyntaxTokenizer() }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -173,7 +173,7 @@ private fun IntroSection(colors: DemoColorScheme) {
 private fun InstallationSection(
     mode: DemoThemeMode,
     colors: DemoColorScheme,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
 ) {
     ContentSection(
         title = "Installation",
@@ -204,7 +204,7 @@ private fun InstallationSection(
 private fun QuickStartSection(
     mode: DemoThemeMode,
     colors: DemoColorScheme,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
 ) {
     ContentSection(
         title = "Quick Start",
@@ -239,7 +239,7 @@ private fun QuickStartSection(
 private fun ThemeSection(
     mode: DemoThemeMode,
     colors: DemoColorScheme,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
 ) {
     ContentSection(
         title = "Theming",
@@ -274,14 +274,14 @@ private fun ThemeSection(
 private fun LanguageSubsetSection(
     mode: DemoThemeMode,
     colors: DemoColorScheme,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
 ) {
     ContentSection(
         title = "Choosing A Language Subset",
         colors = colors,
     ) {
         BodyText(
-            text = "The default engine enables every built-in language. Apps can pass a smaller Set<SyntaxLanguageId> when they only need a focused subset.",
+            text = "The default engine enables every built-in language. Apps can pass a smaller Set<LanguageId> when they only need a focused subset.",
             colors = colors,
         )
         CodeExample(
@@ -298,14 +298,14 @@ private fun LanguageSubsetSection(
 private fun CustomLanguageSection(
     mode: DemoThemeMode,
     colors: DemoColorScheme,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
 ) {
     ContentSection(
         title = "Adding Your Own Language",
         colors = colors,
     ) {
         BodyText(
-            text = "Implement SyntaxTokenizer, wrap it in a SyntaxLanguageExtension, register the extension on the engine, and your tokenizer runs alongside the built-ins:",
+            text = "Implement LanguageTokenizer, wrap it in a LanguageExtension, register the extension on the engine, and your tokenizer runs alongside the built-ins:",
             colors = colors,
         )
         CodeExample(
@@ -336,7 +336,7 @@ private fun FaqSection(colors: DemoColorScheme) {
         )
         FaqItem(
             question = "What if my language is not built in?",
-            answer = "Add project-local support with SyntaxLanguageExtension. For built-in requests, search issues first, then open one with the language, why it belongs, and examples. Built-ins stay focused on broadly useful languages.",
+            answer = "Add project-local support with LanguageExtension. For built-in requests, search issues first, then open one with the language, why it belongs, and examples. Built-ins stay focused on broadly useful languages.",
             colors = colors,
         )
         FaqItem(
@@ -486,7 +486,7 @@ private fun CodeExample(
     language: String,
     mode: DemoThemeMode,
     colors: DemoColorScheme,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
 ) {
     val codeFontFamily = demoCodeFontFamily()
     Box(

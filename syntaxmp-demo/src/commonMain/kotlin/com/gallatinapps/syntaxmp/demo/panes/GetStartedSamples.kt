@@ -22,7 +22,7 @@ kotlin {
 internal val BasicTextSample = """
 @Composable
 fun CodeBlock(code: String, language: String) {
-    val engine = remember { SyntaxTokenizerEngine() }
+    val engine = remember { SyntaxTokenizer() }
     BasicText(
         text = rememberSyntaxAnnotatedString(
             code = code,
@@ -38,7 +38,7 @@ fun CodeBlock(code: String, language: String) {
 internal val EditableCodeSample = """
 @Composable
 fun CodeField(state: TextFieldState, languageLabel: String) {
-    val engine = remember { SyntaxTokenizerEngine() }
+    val engine = remember { SyntaxTokenizer() }
     val theme = SyntaxTheme.DefaultDark
 
     BasicTextField(
@@ -92,10 +92,10 @@ internal val PerLanguageThemeSample = """
 val myTheme = SyntaxTheme(
     roleStyles = SyntaxTheme.DefaultDark.roleStyles,
     languageOverrides = mapOf(
-        SyntaxLanguageId.Kotlin to SyntaxRoleStyles(
+        LanguageId.Kotlin to SyntaxRoleStyles(
             SyntaxRole.Keyword to SyntaxStyle(color = Color(0xFF7F52FF)),
         ),
-        SyntaxLanguageId.Python to SyntaxRoleStyles(
+        LanguageId.Python to SyntaxRoleStyles(
             SyntaxRole.Keyword to SyntaxStyle(color = Color(0xFF7DCFFF)),
         ),
     ),
@@ -120,21 +120,21 @@ fun AppSyntaxTheme(
 
 internal val LanguageSetSample = """
 val enabledLanguages = setOf(
-    SyntaxLanguageId.Kotlin,
-    SyntaxLanguageId.Json,
-    SyntaxLanguageId.Markdown,
-    SyntaxLanguageId.Shell,
+    LanguageId.Kotlin,
+    LanguageId.Json,
+    LanguageId.Markdown,
+    LanguageId.Shell,
 )
-val engine = SyntaxTokenizerEngine(builtInLanguages = enabledLanguages)
+val engine = SyntaxTokenizer(builtInLanguages = enabledLanguages)
 """.trimIndent()
 
 
 internal val CustomLanguageSample = """
-val myql = SyntaxLanguageId.fromString("myql")
+val myql = LanguageId.fromString("myql")
 
-val engine = SyntaxTokenizerEngine(
+val engine = SyntaxTokenizer(
     extensions = listOf(
-        SyntaxLanguageExtension(
+        LanguageExtension(
             languageId = myql,
             aliases = setOf("mql"),
             tokenizer = myqlTokenizer, //Create a custom Tokenizer

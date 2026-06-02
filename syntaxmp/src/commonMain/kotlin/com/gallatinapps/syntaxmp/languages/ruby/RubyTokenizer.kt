@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.languages.ruby
 
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
+import com.gallatinapps.syntaxmp.engine.tokenizer.TokenizeRequest
 import com.gallatinapps.syntaxmp.engine.scanners.script.ScriptIdentifierOptions
 import com.gallatinapps.syntaxmp.engine.scanners.script.ScriptLikeScanner
 import com.gallatinapps.syntaxmp.engine.scanners.script.ScriptLikeScannerOptions
@@ -13,8 +13,9 @@ import com.gallatinapps.syntaxmp.engine.primitives.strings.StringLiteralOptions
 import com.gallatinapps.syntaxmp.engine.primitives.strings.PercentLiteralRule
 import com.gallatinapps.syntaxmp.engine.primitives.strings.PercentLiteralOptions
 import com.gallatinapps.syntaxmp.engine.primitives.strings.QuotedStringRule
+import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
-internal object RubyTokenizer {
+internal object RubyTokenizer : LanguageTokenizer {
     private val hashBraceInterpolation = listOf(
         BalancedInterpolationRule(opener = "#{", openBrace = '{', closeBrace = '}'),
     )
@@ -54,15 +55,13 @@ internal object RubyTokenizer {
         ),
     )
 
-    fun tokenize(request: SyntaxTokenizeRequest): SyntaxTokenizeResult =
-        SyntaxTokenizeResult(
-            ScriptLikeScanner(
-                code = request.code,
-                language = request.languageId,
-                keywordRoles = RubyKeywordRoles,
-                constants = RubyConstants,
-                builtinRoles = RubyBuiltinRoles,
-                options = scannerOptions,
-            ).scan(),
-        )
+    override fun tokenize(request: TokenizeRequest): List<SyntaxTokenSpan> =
+        ScriptLikeScanner(
+            code = request.code,
+            language = request.languageId,
+            keywordRoles = RubyKeywordRoles,
+            constants = RubyConstants,
+            builtinRoles = RubyBuiltinRoles,
+            options = scannerOptions,
+        ).scan()
 }

@@ -1,11 +1,10 @@
 package com.gallatinapps.syntaxmp.benchmarks
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageExtension
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageExtension
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
 import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
 
 internal object EmbeddedSubstringBenchmarks {
     private const val TotalEmbeddedChars = 500 * 1024
@@ -63,18 +62,18 @@ internal object EmbeddedSubstringBenchmarks {
         }
 
     private fun publicRouteCase(workload: EmbeddedSubstringWorkload): BenchmarkCase {
-        val parentId = SyntaxLanguageId.fromString("bench-substring-parent-${workload.regionCount}")
-        val childId = SyntaxLanguageId.fromString("bench-substring-child-${workload.regionCount}")
-        val engine = SyntaxTokenizerEngine(
+        val parentId = LanguageId.fromString("bench-substring-parent-${workload.regionCount}")
+        val childId = LanguageId.fromString("bench-substring-child-${workload.regionCount}")
+        val engine = SyntaxTokenizer(
             extensions = listOf(
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = parentId,
                     tokenizer = embeddedRoutingTokenizer(workload.regions, childId.value),
                 ),
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = childId,
-                    tokenizer = SyntaxTokenizer { request ->
-                        SyntaxTokenizeResult(oneLargeSpan(request.code, request.languageId))
+                    tokenizer = LanguageTokenizer { request ->
+                        oneLargeSpan(request.code, request.languageId)
                     },
                 ),
             ),
@@ -100,8 +99,8 @@ internal object EmbeddedSubstringBenchmarks {
     private fun embeddedRoutingTokenizer(
         regions: List<EmbeddedRange>,
         childLabel: String,
-    ): SyntaxTokenizer =
-        SyntaxTokenizer { request ->
+    ): LanguageTokenizer =
+        LanguageTokenizer { request ->
             val spans = mutableListOf<SyntaxTokenSpan>()
             regions.forEach { region ->
                 request.tokenizeEmbedded(
@@ -118,7 +117,7 @@ internal object EmbeddedSubstringBenchmarks {
                     )
                 }
             }
-            SyntaxTokenizeResult(spans)
+            spans
         }
 
     private fun embeddedWorkload(regionCount: Int): EmbeddedSubstringWorkload {

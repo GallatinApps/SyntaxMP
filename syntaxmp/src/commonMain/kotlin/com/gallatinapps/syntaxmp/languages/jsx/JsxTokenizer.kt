@@ -1,21 +1,22 @@
 package com.gallatinapps.syntaxmp.languages.jsx
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.TokenizeRequest
 import com.gallatinapps.syntaxmp.engine.scanners.markup.MarkupDirectiveAttributeOptions
 import com.gallatinapps.syntaxmp.engine.scanners.markup.MarkupExpressionRule
 import com.gallatinapps.syntaxmp.engine.scanners.markup.MarkupScanner
 import com.gallatinapps.syntaxmp.engine.scanners.markup.MarkupScannerOptions
+import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
-internal object JsxTokenizer {
+internal object JsxTokenizer : LanguageTokenizer {
     private val expressionDelimiterRole = SyntaxRole.Punctuation.Expression
     private val scannerOptions = MarkupScannerOptions(
         rawTextTags = JsxRawTextTags,
         rawTextLanguageForTag = MarkupScannerOptions::defaultRawTextLanguageForTag,
         startsInScript = true,
-        expressionLanguage = SyntaxLanguageId.JavaScript,
+        expressionLanguage = LanguageId.JavaScript,
         expressionRules = listOf(
             MarkupExpressionRule(
                 opener = "{",
@@ -29,11 +30,9 @@ internal object JsxTokenizer {
         preserveTagNameCase = true,
     )
 
-    fun tokenize(request: SyntaxTokenizeRequest): SyntaxTokenizeResult =
-        SyntaxTokenizeResult(
-            MarkupScanner(
-                request = request,
-                options = scannerOptions,
-            ).scan(),
-        )
+    override fun tokenize(request: TokenizeRequest): List<SyntaxTokenSpan> =
+        MarkupScanner(
+            request = request,
+            options = scannerOptions,
+        ).scan()
 }

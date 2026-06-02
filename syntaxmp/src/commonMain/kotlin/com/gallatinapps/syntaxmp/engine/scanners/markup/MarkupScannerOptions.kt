@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.engine.scanners.markup
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 
 internal data class MarkupScannerOptions(
     val rawTextTags: Set<String> = emptySet(),
@@ -8,8 +8,8 @@ internal data class MarkupScannerOptions(
         Companion::noRawTextLanguageForTag,
     val expressionRules: List<MarkupExpressionRule> = emptyList(),
     val startsInScript: Boolean = false,
-    val expressionLanguage: SyntaxLanguageId? = null,
-    val frontMatterLanguage: SyntaxLanguageId? = null,
+    val expressionLanguage: LanguageId? = null,
+    val frontMatterLanguage: LanguageId? = null,
     val directiveAttributes: MarkupDirectiveAttributeOptions = MarkupDirectiveAttributeOptions.None,
     val preserveTagNameCase: Boolean = false,
     val typeArgumentTags: Boolean = false,

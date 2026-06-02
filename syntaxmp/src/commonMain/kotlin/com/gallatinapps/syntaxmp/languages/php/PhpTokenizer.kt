@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.languages.php
 
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
+import com.gallatinapps.syntaxmp.engine.tokenizer.TokenizeRequest
 import com.gallatinapps.syntaxmp.engine.primitives.BlockCommentOptions
 import com.gallatinapps.syntaxmp.engine.primitives.LineCommentOptions
 import com.gallatinapps.syntaxmp.engine.primitives.QualifiedNameOptions
@@ -14,8 +14,9 @@ import com.gallatinapps.syntaxmp.engine.primitives.strings.StringLiteralOptions
 import com.gallatinapps.syntaxmp.engine.primitives.strings.PercentFormatSpecifierRule
 import com.gallatinapps.syntaxmp.engine.primitives.strings.QuotedStringRule
 import com.gallatinapps.syntaxmp.engine.primitives.strings.SigilVariableInterpolationRule
+import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
-internal object PhpTokenizer {
+internal object PhpTokenizer : LanguageTokenizer {
     private val sigilInterpolation = listOf(SigilVariableInterpolationRule(prefixes = setOf('$')))
     private val stringFormats = listOf(PercentFormatSpecifierRule)
     private val scannerOptions = ScriptLikeScannerOptions(
@@ -52,16 +53,14 @@ internal object PhpTokenizer {
         ),
     )
 
-    fun tokenize(request: SyntaxTokenizeRequest): SyntaxTokenizeResult =
-        SyntaxTokenizeResult(
-            ScriptLikeScanner(
-                code = request.code,
-                language = request.languageId,
-                keywordRoles = PhpKeywordRoles,
-                constants = PhpConstants,
-                typeKeywords = PhpTypeKeywords,
-                builtinRoles = PhpBuiltinRoles,
-                options = scannerOptions,
-            ).scan(),
-        )
+    override fun tokenize(request: TokenizeRequest): List<SyntaxTokenSpan> =
+        ScriptLikeScanner(
+            code = request.code,
+            language = request.languageId,
+            keywordRoles = PhpKeywordRoles,
+            constants = PhpConstants,
+            typeKeywords = PhpTypeKeywords,
+            builtinRoles = PhpBuiltinRoles,
+            options = scannerOptions,
+        ).scan()
 }

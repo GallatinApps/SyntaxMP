@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.engine.spans
 
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -19,17 +19,17 @@ class EmbeddedSpansTest {
             languageLabel = "child",
             tokenizeEmbedded = { _, _ ->
                 listOf(
-                    SyntaxTokenSpan(-4, 2, SyntaxRole.Keyword, SyntaxLanguageId.JavaScript),
-                    SyntaxTokenSpan(1, 99, SyntaxRole.String, SyntaxLanguageId.TypeScript),
-                    SyntaxTokenSpan(4, 4, SyntaxRole.Number, SyntaxLanguageId.JavaScript),
+                    SyntaxTokenSpan(-4, 2, SyntaxRole.Keyword, LanguageId.JavaScript),
+                    SyntaxTokenSpan(1, 99, SyntaxRole.String, LanguageId.TypeScript),
+                    SyntaxTokenSpan(4, 4, SyntaxRole.Number, LanguageId.JavaScript),
                 )
             },
         )
 
         assertEquals(
             listOf(
-                SyntaxTokenSpan(3, 5, SyntaxRole.Keyword, SyntaxLanguageId.JavaScript),
-                SyntaxTokenSpan(4, 8, SyntaxRole.String, SyntaxLanguageId.TypeScript),
+                SyntaxTokenSpan(3, 5, SyntaxRole.Keyword, LanguageId.JavaScript),
+                SyntaxTokenSpan(4, 8, SyntaxRole.String, LanguageId.TypeScript),
             ),
             tokens,
         )
@@ -45,7 +45,7 @@ class EmbeddedSpansTest {
             bodyEnd = 2,
             languageLabel = "child",
             tokenizeEmbedded = { _, _ ->
-                listOf(SyntaxTokenSpan(0, 1, SyntaxRole.Keyword, SyntaxLanguageId.Kotlin))
+                listOf(SyntaxTokenSpan(0, 1, SyntaxRole.Keyword, LanguageId.Kotlin))
             },
         )
 

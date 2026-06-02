@@ -1,16 +1,16 @@
 package com.gallatinapps.syntaxmp.languages.dockerfile
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.appendEmbeddedSpans
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
+import com.gallatinapps.syntaxmp.engine.tokenizer.TokenizeRequest
 
 internal class DockerfileScanner(
-    private val request: SyntaxTokenizeRequest,
+    private val request: TokenizeRequest,
 ) {
     private val code: String = request.code
-    private val language: SyntaxLanguageId = request.languageId
+    private val language: LanguageId = request.languageId
     private val tokens = mutableListOf<SyntaxTokenSpan>()
 
     fun scan(): List<SyntaxTokenSpan> {
@@ -184,7 +184,7 @@ internal class DockerfileScanner(
         val before = commandTokens(argumentStart, heredocStart)
         val after = commandTokens(header.afterDelimiter, lineEnd)
         return when {
-            before.isEmpty() && after.isEmpty() -> SyntaxLanguageId.Shell.value
+            before.isEmpty() && after.isEmpty() -> LanguageId.Shell.value
             before.isEmpty() -> after.singleOrNull()?.toShellLanguageLabel()
             after.isEmpty() -> before.singleOrNull()?.toShellLanguageLabel()
             else -> null
@@ -283,8 +283,8 @@ internal class DockerfileScanner(
 
     private fun String.toShellLanguageLabel(): String? =
         when (this) {
-            "sh" -> SyntaxLanguageId.Shell.value
-            "bash" -> SyntaxLanguageId.Bash.value
+            "sh" -> LanguageId.Shell.value
+            "bash" -> LanguageId.Bash.value
             else -> null
         }
 

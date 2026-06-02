@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.languages.fixtures
 
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -27,7 +27,7 @@ internal fun assertTokens(
     language: String?,
     code: String,
     expected: List<TokenAssertion>,
-    engine: SyntaxTokenizerEngine = SyntaxTokenizerEngine(),
+    engine: SyntaxTokenizer = SyntaxTokenizer(),
     onlyAssertedCategories: Set<String>? = null,
 ) {
     val actual = engine.tokenize(code = code, languageLabel = language).toAssertions()
@@ -55,7 +55,7 @@ internal fun assertContainsTokens(
     language: String?,
     code: String,
     expected: List<TokenAssertion>,
-    engine: SyntaxTokenizerEngine = SyntaxTokenizerEngine(),
+    engine: SyntaxTokenizer = SyntaxTokenizer(),
 ) {
     val actual = engine.tokenize(code = code, languageLabel = language).toAssertions()
     val missing = expected.filterNot { it in actual }
@@ -78,7 +78,7 @@ internal fun assertContainsTokens(
 internal fun dumpTokens(
     language: String?,
     code: String,
-    engine: SyntaxTokenizerEngine = SyntaxTokenizerEngine(),
+    engine: SyntaxTokenizer = SyntaxTokenizer(),
 ): String =
     engine.tokenize(code = code, languageLabel = language).toAssertions().describe(code)
 
@@ -90,7 +90,7 @@ internal fun assertNoToken(
     language: String?,
     code: String,
     predicate: (TokenAssertion) -> Boolean,
-    engine: SyntaxTokenizerEngine = SyntaxTokenizerEngine(),
+    engine: SyntaxTokenizer = SyntaxTokenizer(),
 ) {
     val actual = engine.tokenize(code = code, languageLabel = language).toAssertions()
     val unexpected = actual.filter(predicate)
@@ -118,7 +118,7 @@ internal fun assertNoTokenAt(
     category: String? = null,
     scope: String? = null,
     occurrence: Int = 0,
-    engine: SyntaxTokenizerEngine = SyntaxTokenizerEngine(),
+    engine: SyntaxTokenizer = SyntaxTokenizer(),
 ) {
     val start = code.indexOfOccurrence(substring = substring, occurrence = occurrence)
     val end = start + substring.length
@@ -153,7 +153,7 @@ internal fun assertTokenAt(
     category: String,
     scope: String? = null,
     occurrence: Int = 0,
-    engine: SyntaxTokenizerEngine = SyntaxTokenizerEngine(),
+    engine: SyntaxTokenizer = SyntaxTokenizer(),
 ) {
     val start = code.indexOfOccurrence(substring = substring, occurrence = occurrence)
     val expected = tk(start = start, end = start + substring.length, category = category, scope = scope)

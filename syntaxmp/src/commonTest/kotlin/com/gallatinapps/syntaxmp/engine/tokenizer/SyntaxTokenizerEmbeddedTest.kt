@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.engine.tokenizer
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageExtension
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageExtension
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.appendEmbeddedSpans
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
@@ -10,11 +10,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class SyntaxTokenizerEngineEmbeddedTest {
+class SyntaxTokenizerEmbeddedTest {
     @Test
     fun `engine-backed embedded routing returns empty spans for unknown language`() {
         val tokens = mutableListOf<SyntaxTokenSpan>()
-        val engine = SyntaxTokenizerEngine()
+        val engine = SyntaxTokenizer()
 
         tokens.appendEmbeddedSpans(
             parentCode = "prechildpost",
@@ -31,12 +31,12 @@ class SyntaxTokenizerEngineEmbeddedTest {
 
     @Test
     fun `engine-backed embedded routing returns empty spans for tokenizer failures`() {
-        val childLanguage = SyntaxLanguageId.fromString("child")
-        val engine = SyntaxTokenizerEngine(
+        val childLanguage = LanguageId.fromString("child")
+        val engine = SyntaxTokenizer(
             extensions = listOf(
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = childLanguage,
-                    tokenizer = SyntaxTokenizer { error("child boom") },
+                    tokenizer = LanguageTokenizer { error("child boom") },
                 ),
             ),
         )
@@ -57,20 +57,18 @@ class SyntaxTokenizerEngineEmbeddedTest {
 
     @Test
     fun `engine-backed embedded routing can resolve extension languages`() {
-        val childLanguage = SyntaxLanguageId.fromString("mydsl")
-        val engine = SyntaxTokenizerEngine(
+        val childLanguage = LanguageId.fromString("mydsl")
+        val engine = SyntaxTokenizer(
             extensions = listOf(
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = childLanguage,
-                    tokenizer = SyntaxTokenizer { request ->
-                        SyntaxTokenizeResult(
-                            listOf(
-                                SyntaxTokenSpan(
-                                    start = request.code.indexOf("token"),
-                                    endExclusive = request.code.indexOf("token") + "token".length,
-                                    role = SyntaxRole.Function,
-                                    languageId = request.languageId,
-                                ),
+                    tokenizer = LanguageTokenizer { request ->
+                        listOf(
+                            SyntaxTokenSpan(
+                                start = request.code.indexOf("token"),
+                                endExclusive = request.code.indexOf("token") + "token".length,
+                                role = SyntaxRole.Function,
+                                languageId = request.languageId,
                             ),
                         )
                     },
@@ -97,27 +95,25 @@ class SyntaxTokenizerEngineEmbeddedTest {
 
     @Test
     fun `extension tokenizer can call tokenizeEmbedded to route to another extension`() {
-        val hostLanguage = SyntaxLanguageId.fromString("template-host")
-        val childLanguage = SyntaxLanguageId.fromString("template-child")
-        val engine = SyntaxTokenizerEngine(
+        val hostLanguage = LanguageId.fromString("template-host")
+        val childLanguage = LanguageId.fromString("template-child")
+        val engine = SyntaxTokenizer(
             extensions = listOf(
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = hostLanguage,
-                    tokenizer = SyntaxTokenizer { request ->
-                        SyntaxTokenizeResult(request.tokenizeEmbedded(code = "inner", languageLabel = "template-child"))
+                    tokenizer = LanguageTokenizer { request ->
+                        request.tokenizeEmbedded(code = "inner", languageLabel = "template-child")
                     },
                 ),
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = childLanguage,
-                    tokenizer = SyntaxTokenizer { request ->
-                        SyntaxTokenizeResult(
-                            listOf(
-                                SyntaxTokenSpan(
-                                    start = 0,
-                                    endExclusive = request.code.length,
-                                    role = SyntaxRole.Function,
-                                    languageId = request.languageId,
-                                ),
+                    tokenizer = LanguageTokenizer { request ->
+                        listOf(
+                            SyntaxTokenSpan(
+                                start = 0,
+                                endExclusive = request.code.length,
+                                role = SyntaxRole.Function,
+                                languageId = request.languageId,
                             ),
                         )
                     },
@@ -133,9 +129,9 @@ class SyntaxTokenizerEngineEmbeddedTest {
 
     @Test
     fun `manually constructed request returns empty embedded spans`() {
-        val request = SyntaxTokenizeRequest(
+        val request = TokenizeRequest(
             code = "host",
-            languageId = SyntaxLanguageId.Markdown,
+            languageId = LanguageId.Markdown,
         )
 
         assertTrue(request.tokenizeEmbedded(code = "const value = 1", languageLabel = "javascript").isEmpty())
@@ -143,12 +139,12 @@ class SyntaxTokenizerEngineEmbeddedTest {
 
     @Test
     fun `embedded depth cap remains three`() {
-        val first = SyntaxLanguageId.fromString("depth-one")
-        val second = SyntaxLanguageId.fromString("depth-two")
-        val third = SyntaxLanguageId.fromString("depth-three")
-        val fourth = SyntaxLanguageId.fromString("depth-four")
-        val fifth = SyntaxLanguageId.fromString("depth-five")
-        val engine = SyntaxTokenizerEngine(
+        val first = LanguageId.fromString("depth-one")
+        val second = LanguageId.fromString("depth-two")
+        val third = LanguageId.fromString("depth-three")
+        val fourth = LanguageId.fromString("depth-four")
+        val fifth = LanguageId.fromString("depth-five")
+        val engine = SyntaxTokenizer(
             extensions = listOf(
                 depthTokenizer(first, SyntaxRole.Keyword, 0, "depth-two"),
                 depthTokenizer(second, SyntaxRole.String, 1, "depth-three"),
@@ -168,14 +164,14 @@ class SyntaxTokenizerEngineEmbeddedTest {
     }
 
     private fun depthTokenizer(
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
         role: SyntaxRole,
         start: Int,
         nextLanguageLabel: String?,
-    ): SyntaxLanguageExtension =
-        SyntaxLanguageExtension(
+    ): LanguageExtension =
+        LanguageExtension(
             languageId = languageId,
-            tokenizer = SyntaxTokenizer { request ->
+            tokenizer = LanguageTokenizer { request ->
                 val ownSpan = SyntaxTokenSpan(
                     start = start,
                     endExclusive = start + 1,
@@ -185,7 +181,7 @@ class SyntaxTokenizerEngineEmbeddedTest {
                 val embeddedSpans = nextLanguageLabel
                     ?.let { request.tokenizeEmbedded(code = request.code, languageLabel = it) }
                     .orEmpty()
-                SyntaxTokenizeResult(listOf(ownSpan) + embeddedSpans)
+                listOf(ownSpan) + embeddedSpans
             },
         )
 }

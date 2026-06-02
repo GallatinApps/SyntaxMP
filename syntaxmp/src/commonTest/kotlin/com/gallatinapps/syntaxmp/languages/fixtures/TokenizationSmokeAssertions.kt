@@ -2,10 +2,10 @@ package com.gallatinapps.syntaxmp.languages.fixtures
 
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
 
-internal fun defaultTestEngine(): SyntaxTokenizerEngine =
-    SyntaxTokenizerEngine(extensions = emptyList())
+internal fun defaultTestEngine(): SyntaxTokenizer =
+    SyntaxTokenizer(extensions = emptyList())
 
 internal fun List<SyntaxTokenSpan>.has(
     code: String,

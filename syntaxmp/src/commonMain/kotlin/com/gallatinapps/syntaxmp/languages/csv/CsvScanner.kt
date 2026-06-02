@@ -1,12 +1,12 @@
 package com.gallatinapps.syntaxmp.languages.csv
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
 internal class CsvScanner(
     private val code: String,
-    private val language: SyntaxLanguageId,
+    private val language: LanguageId,
 ) {
     private val tokens = mutableListOf<SyntaxTokenSpan>()
 

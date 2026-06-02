@@ -1,13 +1,13 @@
 package com.gallatinapps.syntaxmp.languages.css
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 import com.gallatinapps.syntaxmp.engine.primitives.findBraceBalancedEnd
 
 internal class CssScanner(
     private val code: String,
-    private val language: SyntaxLanguageId,
+    private val language: LanguageId,
     private val atRules: Set<String> = emptySet(),
     private val namedConstants: Set<String> = emptySet(),
     private val preprocessorKeywordRoles: Map<String, SyntaxRole> = emptyMap(),

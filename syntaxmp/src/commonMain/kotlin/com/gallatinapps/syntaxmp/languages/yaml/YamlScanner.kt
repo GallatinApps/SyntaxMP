@@ -1,12 +1,12 @@
 package com.gallatinapps.syntaxmp.languages.yaml
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
 internal class YamlScanner(
     private val code: String,
-    private val language: SyntaxLanguageId,
+    private val language: LanguageId,
     private val constants: Set<String> = emptySet(),
 ) {
     private val tokens = mutableListOf<SyntaxTokenSpan>()

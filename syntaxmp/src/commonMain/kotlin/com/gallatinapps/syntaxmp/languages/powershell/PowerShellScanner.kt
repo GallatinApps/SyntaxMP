@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.languages.powershell
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.primitives.LexemeRoleMap
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
@@ -8,7 +8,7 @@ import com.gallatinapps.syntaxmp.engine.primitives.findBraceBalancedEnd
 
 internal class PowerShellScanner(
     private val code: String,
-    private val language: SyntaxLanguageId,
+    private val language: LanguageId,
     private val keywordRoles: LexemeRoleMap = emptyMap(),
     private val constants: Set<String> = emptySet(),
     private val dashOperators: Set<String> = emptySet(),

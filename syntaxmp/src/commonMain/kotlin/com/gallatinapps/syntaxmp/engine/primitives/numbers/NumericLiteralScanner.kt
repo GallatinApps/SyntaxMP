@@ -4,7 +4,7 @@ package com.gallatinapps.syntaxmp.engine.primitives.numbers
  * Internal implementation contract used by shared scanners to delegate numeric literal
  * recognition. Not part of the public v1 API.
  *
- * Hosts adding custom languages via SyntaxLanguageExtension write their own SyntaxTokenizer and
+ * Hosts adding custom languages via LanguageExtension write their own LanguageTokenizer and
  * do their own number scanning inside it; they do not plug into this interface.
  *
  * Implementations are expected to be pure functions of (code, start): no internal state, no side

@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.languages.cpp
 
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
+import com.gallatinapps.syntaxmp.engine.tokenizer.TokenizeRequest
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.primitives.numbers.ConfigurableNumberScanner
 import com.gallatinapps.syntaxmp.engine.primitives.numbers.OctalMode
@@ -18,8 +18,9 @@ import com.gallatinapps.syntaxmp.engine.primitives.strings.ParenthesizedRawStrin
 import com.gallatinapps.syntaxmp.engine.primitives.strings.PercentFormatSpecifierRule
 import com.gallatinapps.syntaxmp.engine.primitives.strings.PrefixedQuotedStringRule
 import com.gallatinapps.syntaxmp.engine.primitives.strings.QuotedStringRule
+import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
-internal object CppTokenizer {
+internal object CppTokenizer : LanguageTokenizer {
     private val numberScanner = ConfigurableNumberScanner(
         allowHex = true,
         allowOctal = OctalMode.LeadingZero,
@@ -58,16 +59,14 @@ internal object CppTokenizer {
         numbers = numberScanner,
     )
 
-    fun tokenize(request: SyntaxTokenizeRequest): SyntaxTokenizeResult =
-        SyntaxTokenizeResult(
-            CLikeScanner(
-                code = request.code,
-                language = request.languageId,
-                keywordRoles = CppKeywordRoles,
-                constants = CppConstants,
-                typeKeywords = CppTypeKeywords,
-                builtinRoles = CppBuiltinRoles,
-                options = scannerOptions,
-            ).scan(),
-        )
+    override fun tokenize(request: TokenizeRequest): List<SyntaxTokenSpan> =
+        CLikeScanner(
+            code = request.code,
+            language = request.languageId,
+            keywordRoles = CppKeywordRoles,
+            constants = CppConstants,
+            typeKeywords = CppTypeKeywords,
+            builtinRoles = CppBuiltinRoles,
+            options = scannerOptions,
+        ).scan()
 }

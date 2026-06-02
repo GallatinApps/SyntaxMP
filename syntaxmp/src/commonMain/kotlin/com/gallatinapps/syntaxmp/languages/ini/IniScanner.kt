@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.languages.ini
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
@@ -8,7 +8,7 @@ private const val ExportLineKeyword = "export"
 
 internal class IniScanner(
     private val code: String,
-    private val language: SyntaxLanguageId,
+    private val language: LanguageId,
     private val constants: Set<String> = emptySet(),
 ) {
     private val tokens = mutableListOf<SyntaxTokenSpan>()

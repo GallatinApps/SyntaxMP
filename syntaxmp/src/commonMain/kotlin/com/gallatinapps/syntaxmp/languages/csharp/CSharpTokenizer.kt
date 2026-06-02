@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.languages.csharp
 
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
+import com.gallatinapps.syntaxmp.engine.tokenizer.TokenizeRequest
 import com.gallatinapps.syntaxmp.engine.primitives.numbers.ConfigurableNumberScanner
 import com.gallatinapps.syntaxmp.engine.scanners.clike.AnnotationOptions
 import com.gallatinapps.syntaxmp.engine.scanners.clike.CLikeScanner
@@ -15,8 +15,9 @@ import com.gallatinapps.syntaxmp.engine.primitives.strings.StringLiteralOptions
 import com.gallatinapps.syntaxmp.engine.primitives.strings.PrefixRun
 import com.gallatinapps.syntaxmp.engine.primitives.strings.QuotedStringRule
 import com.gallatinapps.syntaxmp.engine.primitives.strings.RepeatedQuoteRawStringRule
+import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
-internal object CSharpTokenizer {
+internal object CSharpTokenizer : LanguageTokenizer {
     private val numberScanner = ConfigurableNumberScanner(
         allowHex = true,
         allowBinary = true,
@@ -71,16 +72,14 @@ internal object CSharpTokenizer {
         numbers = numberScanner,
     )
 
-    fun tokenize(request: SyntaxTokenizeRequest): SyntaxTokenizeResult =
-        SyntaxTokenizeResult(
-            CLikeScanner(
-                code = request.code,
-                language = request.languageId,
-                keywordRoles = CSharpKeywordRoles,
-                constants = CSharpConstants,
-                typeKeywords = CSharpTypeKeywords,
-                builtinRoles = CSharpBuiltinRoles,
-                options = scannerOptions,
-            ).scan(),
-        )
+    override fun tokenize(request: TokenizeRequest): List<SyntaxTokenSpan> =
+        CLikeScanner(
+            code = request.code,
+            language = request.languageId,
+            keywordRoles = CSharpKeywordRoles,
+            constants = CSharpConstants,
+            typeKeywords = CSharpTypeKeywords,
+            builtinRoles = CSharpBuiltinRoles,
+            options = scannerOptions,
+        ).scan()
 }

@@ -10,13 +10,12 @@ import androidx.compose.ui.text.SpanStyle
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxRoleStyles
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxStyle
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageExtension
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageExtension
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
 import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -26,13 +25,13 @@ class RememberSyntaxAnnotatedStringTest {
     @Test
     fun nullLanguageBuildsPlainAnnotatedStringWithoutTokenizing() = runComposeUiTest {
         var didTokenize = false
-        val engine = SyntaxTokenizerEngine(
+        val engine = SyntaxTokenizer(
             extensions = listOf(
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = EqualSpanLanguage,
-                    tokenizer = SyntaxTokenizer {
+                    tokenizer = LanguageTokenizer {
                         didTokenize = true
-                        SyntaxTokenizeResult()
+                        emptyList()
                     },
                 ),
             ),
@@ -60,14 +59,14 @@ class RememberSyntaxAnnotatedStringTest {
     @Test
     fun blankLanguageBuildsPlainAnnotatedStringWithoutTokenizing() = runComposeUiTest {
         var didTokenize = false
-        val engine = SyntaxTokenizerEngine(
+        val engine = SyntaxTokenizer(
             extensions = listOf(
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = EqualSpanLanguage,
                     aliases = setOf("equal"),
-                    tokenizer = SyntaxTokenizer {
+                    tokenizer = LanguageTokenizer {
                         didTokenize = true
-                        SyntaxTokenizeResult()
+                        emptyList()
                     },
                 ),
             ),
@@ -95,22 +94,21 @@ class RememberSyntaxAnnotatedStringTest {
     @Test
     fun restylesWithoutRetokenizingAndRebuildsForEqualTokenSpans() = runComposeUiTest {
         var tokenizeCount = 0
-        val engine = SyntaxTokenizerEngine(
+        val engine = SyntaxTokenizer(
             extensions = listOf(
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = EqualSpanLanguage,
-                    tokenizer = SyntaxTokenizer { request ->
+                    tokenizer = LanguageTokenizer { request ->
                         tokenizeCount += 1
-                        SyntaxTokenizeResult(
-                            spans = listOf(
+
+                            listOf(
                                 SyntaxTokenSpan(
                                     start = 0,
                                     endExclusive = request.code.length,
                                     role = SyntaxRole.Comment,
                                     languageId = request.languageId,
                                 ),
-                            ),
-                        )
+                            )
                     },
                 ),
             ),
@@ -180,7 +178,7 @@ class RememberSyntaxAnnotatedStringTest {
         }
 
     private companion object {
-        val EqualSpanLanguage = SyntaxLanguageId.fromString("equal")
+        val EqualSpanLanguage = LanguageId.fromString("equal")
     }
 }
 

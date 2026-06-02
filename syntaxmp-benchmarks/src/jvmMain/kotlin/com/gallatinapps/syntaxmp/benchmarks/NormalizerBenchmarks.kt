@@ -1,12 +1,11 @@
 package com.gallatinapps.syntaxmp.benchmarks
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageExtension
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageExtension
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
 import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
 
 internal object NormalizerBenchmarks {
     fun cases(): List<BenchmarkCase> {
@@ -22,14 +21,14 @@ internal object NormalizerBenchmarks {
             NormalizerWorkload("unique boundaries active spans", ::uniqueBoundaryActiveSpans),
         )
         val extensions = workloads.map { workload ->
-            SyntaxLanguageExtension(
+            LanguageExtension(
                 languageId = workload.languageId,
-                tokenizer = SyntaxTokenizer { request ->
-                    SyntaxTokenizeResult(workload.spans(request.code.length, request.languageId))
+                tokenizer = LanguageTokenizer { request ->
+                    workload.spans(request.code.length, request.languageId)
                 },
             )
         }
-        val engine = SyntaxTokenizerEngine(extensions = extensions)
+        val engine = SyntaxTokenizer(extensions = extensions)
 
         return workloads.map { workload ->
             BenchmarkCase(
@@ -52,15 +51,15 @@ internal object NormalizerBenchmarks {
 
     private data class NormalizerWorkload(
         val name: String,
-        val spans: (Int, SyntaxLanguageId) -> List<SyntaxTokenSpan>,
+        val spans: (Int, LanguageId) -> List<SyntaxTokenSpan>,
     ) {
-        val languageId: SyntaxLanguageId =
-            SyntaxLanguageId.fromString("bench-normalizer-${name.replace(Regex("[^a-zA-Z0-9]+"), "-")}")
+        val languageId: LanguageId =
+            LanguageId.fromString("bench-normalizer-${name.replace(Regex("[^a-zA-Z0-9]+"), "-")}")
     }
 
     private fun sortedNonOverlappingSpans(
         length: Int,
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
     ): List<SyntaxTokenSpan> =
         buildList {
             var start = 0
@@ -73,7 +72,7 @@ internal object NormalizerBenchmarks {
 
     private fun adjacentSameRoleSpans(
         length: Int,
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
     ): List<SyntaxTokenSpan> =
         buildList {
             var start = 0
@@ -86,7 +85,7 @@ internal object NormalizerBenchmarks {
 
     private fun adjacentDifferentRoleSpans(
         length: Int,
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
     ): List<SyntaxTokenSpan> =
         buildList {
             var start = 0
@@ -102,7 +101,7 @@ internal object NormalizerBenchmarks {
 
     private fun clippedOutOfRangeSpans(
         length: Int,
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
     ): List<SyntaxTokenSpan> =
         buildList {
             add(span(-64, 32, SyntaxRole.Comment, languageId))
@@ -117,13 +116,13 @@ internal object NormalizerBenchmarks {
 
     private fun outOfOrderSpans(
         length: Int,
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
     ): List<SyntaxTokenSpan> =
         sortedNonOverlappingSpans(length, languageId).asReversed()
 
     private fun broadParentNarrowChildSpans(
         length: Int,
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
     ): List<SyntaxTokenSpan> =
         buildList {
             add(span(0, length, SyntaxRole.Markup, languageId))
@@ -136,7 +135,7 @@ internal object NormalizerBenchmarks {
 
     private fun sameBoundaryOverlapSpans(
         length: Int,
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
     ): List<SyntaxTokenSpan> =
         buildList {
             var start = 0
@@ -152,7 +151,7 @@ internal object NormalizerBenchmarks {
 
     private fun uniqueBoundaryActiveSpans(
         length: Int,
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
     ): List<SyntaxTokenSpan> =
         buildList {
             var start = 0
@@ -172,7 +171,7 @@ internal object NormalizerBenchmarks {
         start: Int,
         endExclusive: Int,
         role: SyntaxRole,
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
     ): SyntaxTokenSpan =
         SyntaxTokenSpan(
             start = start,

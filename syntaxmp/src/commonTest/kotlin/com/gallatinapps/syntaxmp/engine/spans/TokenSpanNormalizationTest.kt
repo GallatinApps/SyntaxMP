@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.engine.spans
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 import kotlin.random.Random
@@ -11,8 +11,8 @@ class TokenSpanNormalizationTest {
     @Test
     fun sortedNonOverlappingSpansAreReturned() {
         val input = listOf(
-            SyntaxTokenSpan(0, 3, SyntaxRole.Keyword, SyntaxLanguageId.Kotlin),
-            SyntaxTokenSpan(5, 8, SyntaxRole.String, SyntaxLanguageId.Kotlin),
+            SyntaxTokenSpan(0, 3, SyntaxRole.Keyword, LanguageId.Kotlin),
+            SyntaxTokenSpan(5, 8, SyntaxRole.String, LanguageId.Kotlin),
         )
 
         val spans = normalizeTokenSpans(
@@ -27,15 +27,15 @@ class TokenSpanNormalizationTest {
     fun adjacentSpansWithSameRoleAndLanguageMerge() {
         val spans = normalizeTokenSpans(
             spans = listOf(
-                SyntaxTokenSpan(0, 3, SyntaxRole.String, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(3, 6, SyntaxRole.String, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 3, SyntaxRole.String, LanguageId.Kotlin),
+                SyntaxTokenSpan(3, 6, SyntaxRole.String, LanguageId.Kotlin),
             ),
             codeLength = 6,
         )
 
         assertEquals(
             listOf(
-                SyntaxTokenSpan(0, 6, SyntaxRole.String, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 6, SyntaxRole.String, LanguageId.Kotlin),
             ),
             spans,
         )
@@ -45,16 +45,16 @@ class TokenSpanNormalizationTest {
     fun adjacentSpansWithDifferentRolesDoNotMerge() {
         val spans = normalizeTokenSpans(
             spans = listOf(
-                SyntaxTokenSpan(0, 3, SyntaxRole.String, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(3, 6, SyntaxRole.Number, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 3, SyntaxRole.String, LanguageId.Kotlin),
+                SyntaxTokenSpan(3, 6, SyntaxRole.Number, LanguageId.Kotlin),
             ),
             codeLength = 6,
         )
 
         assertEquals(
             listOf(
-                SyntaxTokenSpan(0, 3, SyntaxRole.String, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(3, 6, SyntaxRole.Number, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 3, SyntaxRole.String, LanguageId.Kotlin),
+                SyntaxTokenSpan(3, 6, SyntaxRole.Number, LanguageId.Kotlin),
             ),
             spans,
         )
@@ -64,17 +64,17 @@ class TokenSpanNormalizationTest {
     fun overlappingTokenSpansAreSplitDeterministically() {
         val spans = normalizeTokenSpans(
             spans = listOf(
-                SyntaxTokenSpan(0, 10, SyntaxRole.String, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(4, 6, SyntaxRole.Escape, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 10, SyntaxRole.String, LanguageId.Kotlin),
+                SyntaxTokenSpan(4, 6, SyntaxRole.Escape, LanguageId.Kotlin),
             ),
             codeLength = 10,
         )
 
         assertEquals(
             listOf(
-                SyntaxTokenSpan(0, 4, SyntaxRole.String, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(4, 6, SyntaxRole.Escape, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(6, 10, SyntaxRole.String, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 4, SyntaxRole.String, LanguageId.Kotlin),
+                SyntaxTokenSpan(4, 6, SyntaxRole.Escape, LanguageId.Kotlin),
+                SyntaxTokenSpan(6, 10, SyntaxRole.String, LanguageId.Kotlin),
             ),
             spans,
         )
@@ -84,15 +84,15 @@ class TokenSpanNormalizationTest {
     fun deeperRoleWinsWhenOverlappingSpansHaveTheSameRange() {
         val spans = normalizeTokenSpans(
             spans = listOf(
-                SyntaxTokenSpan(0, 8, SyntaxRole.Keyword, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(0, 8, SyntaxRole.Keyword.Declaration, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 8, SyntaxRole.Keyword, LanguageId.Kotlin),
+                SyntaxTokenSpan(0, 8, SyntaxRole.Keyword.Declaration, LanguageId.Kotlin),
             ),
             codeLength = 8,
         )
 
         assertEquals(
             listOf(
-                SyntaxTokenSpan(0, 8, SyntaxRole.Keyword.Declaration, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 8, SyntaxRole.Keyword.Declaration, LanguageId.Kotlin),
             ),
             spans,
         )
@@ -102,15 +102,15 @@ class TokenSpanNormalizationTest {
     fun earlierSpanWinsWhenOverlappingSpansHaveTheSameRangeAndDepth() {
         val spans = normalizeTokenSpans(
             spans = listOf(
-                SyntaxTokenSpan(0, 8, SyntaxRole.String, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(0, 8, SyntaxRole.Number, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 8, SyntaxRole.String, LanguageId.Kotlin),
+                SyntaxTokenSpan(0, 8, SyntaxRole.Number, LanguageId.Kotlin),
             ),
             codeLength = 8,
         )
 
         assertEquals(
             listOf(
-                SyntaxTokenSpan(0, 8, SyntaxRole.String, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 8, SyntaxRole.String, LanguageId.Kotlin),
             ),
             spans,
         )
@@ -127,9 +127,9 @@ class TokenSpanNormalizationTest {
             SyntaxRole.Markup.Expression,
         )
         val languages = listOf(
-            SyntaxLanguageId.Kotlin,
-            SyntaxLanguageId.JavaScript,
-            SyntaxLanguageId.Markdown,
+            LanguageId.Kotlin,
+            LanguageId.JavaScript,
+            LanguageId.Markdown,
         )
         val random = Random(seed = 30)
 
@@ -165,7 +165,7 @@ class TokenSpanNormalizationTest {
                     start = rocketStart,
                     endExclusive = rocketStart + "🚀".length,
                     role = SyntaxRole.String,
-                    languageId = SyntaxLanguageId.Kotlin,
+                    languageId = LanguageId.Kotlin,
                 ),
             ),
             codeLength = code.length,
@@ -178,18 +178,18 @@ class TokenSpanNormalizationTest {
     fun outOfBoundsAndEmptySpansNormalizeDeterministically() {
         val spans = normalizeTokenSpans(
             spans = listOf(
-                SyntaxTokenSpan(-2, 2, SyntaxRole.Comment, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(2, 2, SyntaxRole.String, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(4, 12, SyntaxRole.Keyword, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(12, 14, SyntaxRole.Number, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(-2, 2, SyntaxRole.Comment, LanguageId.Kotlin),
+                SyntaxTokenSpan(2, 2, SyntaxRole.String, LanguageId.Kotlin),
+                SyntaxTokenSpan(4, 12, SyntaxRole.Keyword, LanguageId.Kotlin),
+                SyntaxTokenSpan(12, 14, SyntaxRole.Number, LanguageId.Kotlin),
             ),
             codeLength = 10,
         )
 
         assertEquals(
             listOf(
-                SyntaxTokenSpan(0, 2, SyntaxRole.Comment, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(4, 10, SyntaxRole.Keyword, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 2, SyntaxRole.Comment, LanguageId.Kotlin),
+                SyntaxTokenSpan(4, 10, SyntaxRole.Keyword, LanguageId.Kotlin),
             ),
             spans,
         )
@@ -199,16 +199,16 @@ class TokenSpanNormalizationTest {
     fun outOfOrderSpansNormalizeDeterministically() {
         val spans = normalizeTokenSpans(
             spans = listOf(
-                SyntaxTokenSpan(4, 8, SyntaxRole.String, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(0, 4, SyntaxRole.Keyword, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(4, 8, SyntaxRole.String, LanguageId.Kotlin),
+                SyntaxTokenSpan(0, 4, SyntaxRole.Keyword, LanguageId.Kotlin),
             ),
             codeLength = 8,
         )
 
         assertEquals(
             listOf(
-                SyntaxTokenSpan(0, 4, SyntaxRole.Keyword, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(4, 8, SyntaxRole.String, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 4, SyntaxRole.Keyword, LanguageId.Kotlin),
+                SyntaxTokenSpan(4, 8, SyntaxRole.String, LanguageId.Kotlin),
             ),
             spans,
         )
@@ -218,16 +218,16 @@ class TokenSpanNormalizationTest {
     fun adjacentSpansWithDifferentLanguagesDoNotMerge() {
         val spans = normalizeTokenSpans(
             spans = listOf(
-                SyntaxTokenSpan(0, 3, SyntaxRole.String, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(3, 6, SyntaxRole.String, SyntaxLanguageId.JavaScript),
+                SyntaxTokenSpan(0, 3, SyntaxRole.String, LanguageId.Kotlin),
+                SyntaxTokenSpan(3, 6, SyntaxRole.String, LanguageId.JavaScript),
             ),
             codeLength = 6,
         )
 
         assertEquals(
             listOf(
-                SyntaxTokenSpan(0, 3, SyntaxRole.String, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(3, 6, SyntaxRole.String, SyntaxLanguageId.JavaScript),
+                SyntaxTokenSpan(0, 3, SyntaxRole.String, LanguageId.Kotlin),
+                SyntaxTokenSpan(3, 6, SyntaxRole.String, LanguageId.JavaScript),
             ),
             spans,
         )

@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.engine.tokenizer
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
 /**
@@ -9,18 +9,18 @@ import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
  * @property code Original code string to tokenize.
  * @property languageId Resolved language id for this tokenizer invocation.
  */
-public class SyntaxTokenizeRequest internal constructor(
+public class TokenizeRequest internal constructor(
     public val code: String,
-    public val languageId: SyntaxLanguageId,
+    public val languageId: LanguageId,
     private val embeddedLanguageTokenizer: (String, String) -> List<SyntaxTokenSpan>,
 ) {
     /**
-     * Constructs a request not bound to a [SyntaxTokenizerEngine]. Useful for direct unit tests
+     * Constructs a request not bound to a [SyntaxTokenizer]. Useful for direct unit tests
      * of a tokenizer. [tokenizeEmbedded] returns an empty list on requests constructed this way.
      */
     public constructor(
         code: String,
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
     ) : this(
         code = code,
         languageId = languageId,
@@ -37,7 +37,7 @@ public class SyntaxTokenizeRequest internal constructor(
         embeddedLanguageTokenizer(code, languageLabel)
 
     override fun toString(): String =
-        "SyntaxTokenizeRequest(code=<${code.length} chars>, languageId=$languageId)"
+        "TokenizeRequest(code=<${code.length} chars>, languageId=$languageId)"
 }
 
 private val noEmbeddedTokenizer: (String, String) -> List<SyntaxTokenSpan> =

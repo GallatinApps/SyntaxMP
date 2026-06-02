@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.engine.spans
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 
 /**
@@ -15,5 +15,5 @@ public data class SyntaxTokenSpan(
     val start: Int,
     val endExclusive: Int,
     val role: SyntaxRole,
-    val languageId: SyntaxLanguageId,
+    val languageId: LanguageId,
 )

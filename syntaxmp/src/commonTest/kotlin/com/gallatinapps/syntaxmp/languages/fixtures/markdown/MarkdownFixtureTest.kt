@@ -1,12 +1,11 @@
 package com.gallatinapps.syntaxmp.languages.fixtures.markdown
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageExtension
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageExtension
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
 import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
 import com.gallatinapps.syntaxmp.languages.fixtures.assertNoTokenAt
 import com.gallatinapps.syntaxmp.languages.fixtures.assertTokenAt
 import kotlin.test.Test
@@ -84,23 +83,22 @@ class MarkdownFixtureTest {
 
     @Test
     fun `fenced code can delegate to extension languages`() {
-        val childLanguage = SyntaxLanguageId.fromString("mydsl")
-        val engine = SyntaxTokenizerEngine(
+        val childLanguage = LanguageId.fromString("mydsl")
+        val engine = SyntaxTokenizer(
             extensions = listOf(
-                SyntaxLanguageExtension(
+                LanguageExtension(
                     languageId = childLanguage,
-                    tokenizer = SyntaxTokenizer { request ->
+                    tokenizer = LanguageTokenizer { request ->
                         val start = request.code.indexOf("special")
-                        SyntaxTokenizeResult(
-                            spans = listOf(
+
+                            listOf(
                                 SyntaxTokenSpan(
                                     start = start,
                                     endExclusive = start + "special".length,
                                     role = SyntaxRole.Function,
                                     languageId = request.languageId,
                                 ),
-                            ),
-                        )
+                            )
                     },
                 ),
             ),

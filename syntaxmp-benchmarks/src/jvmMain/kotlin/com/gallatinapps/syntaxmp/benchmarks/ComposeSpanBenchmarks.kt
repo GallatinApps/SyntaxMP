@@ -6,17 +6,17 @@ import com.gallatinapps.syntaxmp.compose.applySyntaxStyledSpans
 import com.gallatinapps.syntaxmp.compose.buildSyntaxAnnotatedString
 import com.gallatinapps.syntaxmp.compose.buildSyntaxStyledSpans
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
 
 internal object ComposeSpanBenchmarks {
-    private val engine = SyntaxTokenizerEngine()
+    private val engine = SyntaxTokenizer()
     private val theme = SyntaxTheme.DefaultLight
 
     fun cases(): List<BenchmarkCase> {
         val syntheticCode = syntheticCode(BenchmarkTargetSize.MediumEditorFile)
-        val syntheticLanguage = SyntaxLanguageId.fromString("bench-compose")
+        val syntheticLanguage = LanguageId.fromString("bench-compose")
         val manyShort = ComposeWorkload(
             sourceCaseId = "synthetic-many-short-one-line-spans",
             name = "many short one-line spans",

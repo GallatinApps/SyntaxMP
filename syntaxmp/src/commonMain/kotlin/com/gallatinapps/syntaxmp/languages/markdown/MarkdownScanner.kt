@@ -1,18 +1,18 @@
 package com.gallatinapps.syntaxmp.languages.markdown
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.scanners.markup.findMarkupEntityEnd
 import com.gallatinapps.syntaxmp.engine.spans.appendEmbeddedSpans
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
+import com.gallatinapps.syntaxmp.engine.tokenizer.TokenizeRequest
 
 internal class MarkdownScanner(
-    private val request: SyntaxTokenizeRequest,
+    private val request: TokenizeRequest,
     private val htmlLanguage: String? = null,
 ) {
     private val code: String = request.code
-    private val language: SyntaxLanguageId = request.languageId
+    private val language: LanguageId = request.languageId
     private val tokens = mutableListOf<SyntaxTokenSpan>()
     private val inlineSkipRanges = mutableListOf<MarkdownInlineSkipRange>()
     private val htmlRangeFinder = MarkdownHtmlRangeFinder(code)

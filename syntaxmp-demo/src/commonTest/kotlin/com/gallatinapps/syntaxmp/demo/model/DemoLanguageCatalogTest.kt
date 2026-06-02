@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.demo.model
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
+import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 class DemoLanguageCatalogTest {
     @Test
     fun catalogCoversDefaultLanguageSetInStableOrder() {
-        val defaultLanguageIds = SyntaxLanguageId.BuiltIns.toList()
+        val defaultLanguageIds = LanguageId.BuiltIns.toList()
         val catalogLanguageIds = DemoLanguageCatalog.Languages
             .map { language -> language.id }
             .distinct()
@@ -18,7 +18,7 @@ class DemoLanguageCatalogTest {
         assertEquals(
             expected = defaultLanguageIds,
             actual = catalogLanguageIds,
-            message = "Demo catalog should cover SyntaxLanguageId.BuiltIns order.",
+            message = "Demo catalog should cover LanguageId.BuiltIns order.",
         )
     }
 
@@ -37,8 +37,8 @@ class DemoLanguageCatalogTest {
     fun everyCatalogLanguageIsEnabledByDefault() {
         DemoLanguageCatalog.Languages.forEach { language ->
             assertTrue(
-                actual = language.id in SyntaxLanguageId.BuiltIns,
-                message = "Expected ${language.id.value} to be enabled by SyntaxLanguageId.BuiltIns.",
+                actual = language.id in LanguageId.BuiltIns,
+                message = "Expected ${language.id.value} to be enabled by LanguageId.BuiltIns.",
             )
         }
     }
@@ -47,13 +47,13 @@ class DemoLanguageCatalogTest {
     fun defaultLanguagePrefersKotlin() {
         val defaultLanguage = assertNotNull(DemoLanguageCatalog.defaultLanguage())
 
-        assertEquals(SyntaxLanguageId.Kotlin, defaultLanguage.id)
+        assertEquals(LanguageId.Kotlin, defaultLanguage.id)
     }
 
     @Test
     fun defaultLanguageFallsBackToFirstCatalogEntryWhenKotlinIsUnavailable() {
         val withoutKotlin = DemoLanguageCatalog.Languages
-            .filterNot { it.id == SyntaxLanguageId.Kotlin }
+            .filterNot { it.id == LanguageId.Kotlin }
 
         val defaultLanguage = assertNotNull(DemoLanguageCatalog.defaultLanguage(withoutKotlin))
 
@@ -64,7 +64,7 @@ class DemoLanguageCatalogTest {
     fun languageLookupUsesNormalizedIds() {
         val kotlin = assertNotNull(DemoLanguageCatalog.languageById("  KOTLIN "))
 
-        assertEquals(SyntaxLanguageId.Kotlin, kotlin.id)
+        assertEquals(LanguageId.Kotlin, kotlin.id)
     }
 
     @Test
@@ -75,19 +75,19 @@ class DemoLanguageCatalogTest {
         val bash = assertNotNull(DemoLanguageCatalog.languageByRouteSegment("bash"))
         val zsh = assertNotNull(DemoLanguageCatalog.languageByRouteSegment("zsh"))
 
-        assertEquals(SyntaxLanguageId.Properties, properties.id)
+        assertEquals(LanguageId.Properties, properties.id)
         assertEquals("properties", properties.routeSegment)
-        assertEquals(SyntaxLanguageId.Dotenv, dotenv.id)
+        assertEquals(LanguageId.Dotenv, dotenv.id)
         assertEquals("dotenv", dotenv.routeSegment)
-        assertEquals(SyntaxLanguageId.Shell, shell.id)
+        assertEquals(LanguageId.Shell, shell.id)
         assertEquals("shell", shell.routeSegment)
-        assertEquals(SyntaxLanguageId.Bash, bash.id)
-        assertEquals(SyntaxLanguageId.Zsh, zsh.id)
+        assertEquals(LanguageId.Bash, bash.id)
+        assertEquals(LanguageId.Zsh, zsh.id)
     }
 
     @Test
     fun everySampleTokenizesIntoValidSpans() {
-        val engine = SyntaxTokenizerEngine()
+        val engine = SyntaxTokenizer()
 
         DemoLanguageCatalog.Languages.forEach { language ->
             assertTrue(
@@ -108,7 +108,7 @@ class DemoLanguageCatalogTest {
                     span.start in language.sample.indices &&
                         span.endExclusive in 1..language.sample.length &&
                         span.start < span.endExclusive &&
-                        span.languageId in SyntaxLanguageId.BuiltIns
+                        span.languageId in LanguageId.BuiltIns
                 },
                 message = "Expected ${language.id.value} spans to stay within sample bounds.",
             )

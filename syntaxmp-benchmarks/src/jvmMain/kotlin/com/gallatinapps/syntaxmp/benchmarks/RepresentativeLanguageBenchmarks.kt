@@ -2,10 +2,10 @@ package com.gallatinapps.syntaxmp.benchmarks
 
 import com.gallatinapps.syntaxmp.benchmarks.fixtures.ExpandedLanguageBenchmarkFixture
 import com.gallatinapps.syntaxmp.benchmarks.fixtures.LanguageBenchmarkCatalog
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
 
 internal object RepresentativeLanguageBenchmarks {
-    private val defaultEngine = SyntaxTokenizerEngine()
+    private val defaultEngine = SyntaxTokenizer()
 
     fun cases(): List<BenchmarkCase> =
         LanguageBenchmarkCatalog.expandedFixtures().map(::tokenizationCase)

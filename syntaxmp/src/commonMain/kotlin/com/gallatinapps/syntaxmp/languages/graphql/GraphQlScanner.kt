@@ -1,13 +1,13 @@
 package com.gallatinapps.syntaxmp.languages.graphql
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.primitives.LexemeRoleMap
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
 
 internal class GraphQlScanner(
     private val code: String,
-    private val language: SyntaxLanguageId,
+    private val language: LanguageId,
     private val keywordRoles: LexemeRoleMap = emptyMap(),
     private val constants: Set<String> = emptySet(),
 ) {

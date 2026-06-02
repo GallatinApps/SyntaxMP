@@ -1,17 +1,17 @@
 package com.gallatinapps.syntaxmp.engine.routing
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageExtension
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageExtension
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.language.normalizeLanguageValue
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
+import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
 
 internal data class NormalizedLanguageExtension(
-    val languageId: SyntaxLanguageId,
+    val languageId: LanguageId,
     val aliases: Set<String>,
-    val tokenizer: SyntaxTokenizer,
+    val tokenizer: LanguageTokenizer,
 )
 
-internal fun SyntaxLanguageExtension.normalized(): NormalizedLanguageExtension {
+internal fun LanguageExtension.normalized(): NormalizedLanguageExtension {
     val normalizedAliases = aliases.mapNotNull { alias ->
         alias.normalizeLanguageLabel()
     }.toSet()

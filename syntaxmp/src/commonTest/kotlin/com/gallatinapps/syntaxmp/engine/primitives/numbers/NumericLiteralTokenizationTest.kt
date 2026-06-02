@@ -1,9 +1,9 @@
 package com.gallatinapps.syntaxmp.engine.primitives.numbers
 
 import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.engine.language.LanguageId
 import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -11,18 +11,18 @@ import kotlin.test.assertTrue
 class NumericLiteralTokenizationTest {
     @Test
     fun cLikeTokenizersRecognizeConfiguredNumberForms() {
-        assertNumber(SyntaxLanguageId.Cpp, "auto value = 1'000'000;", "1'000'000")
-        assertNumber(SyntaxLanguageId.C, "double value = 0x1.8p3;", "0x1.8p3")
-        assertNumber(SyntaxLanguageId.JavaScript, "const value = 100n;", "100n")
-        assertNumber(SyntaxLanguageId.Go, "var value complex64 = 1i", "1i")
-        assertNumber(SyntaxLanguageId.Rust, "let value = 100u32;", "100u32")
-        assertNumber(SyntaxLanguageId.JavaScript, "const value = .5;", ".5")
+        assertNumber(LanguageId.Cpp, "auto value = 1'000'000;", "1'000'000")
+        assertNumber(LanguageId.C, "double value = 0x1.8p3;", "0x1.8p3")
+        assertNumber(LanguageId.JavaScript, "const value = 100n;", "100n")
+        assertNumber(LanguageId.Go, "var value complex64 = 1i", "1i")
+        assertNumber(LanguageId.Rust, "let value = 100u32;", "100u32")
+        assertNumber(LanguageId.JavaScript, "const value = .5;", ".5")
     }
 
     @Test
     fun cLikeTokenizersDoNotConsumeRangeOperatorsAsNumbers() {
         val kotlinCode = "val range = 5..10"
-        val kotlin = engine.tokenize(kotlinCode, SyntaxLanguageId.Kotlin.value)
+        val kotlin = engine.tokenize(kotlinCode, LanguageId.Kotlin.value)
 
         assertTrue(kotlin.hasNumber(kotlinCode, "5"))
         assertTrue(kotlin.hasNumber(kotlinCode, "10"))
@@ -30,7 +30,7 @@ class NumericLiteralTokenizationTest {
         assertFalse(kotlin.hasNumber(kotlinCode, ".10"))
 
         val rustCode = "let range = 1..2;"
-        val rust = engine.tokenize(rustCode, SyntaxLanguageId.Rust.value)
+        val rust = engine.tokenize(rustCode, LanguageId.Rust.value)
 
         assertTrue(rust.hasNumber(rustCode, "1"))
         assertTrue(rust.hasNumber(rustCode, "2"))
@@ -39,7 +39,7 @@ class NumericLiteralTokenizationTest {
     }
 
     private fun assertNumber(
-        language: SyntaxLanguageId,
+        language: LanguageId,
         code: String,
         lexeme: String,
     ) {
@@ -59,6 +59,6 @@ class NumericLiteralTokenizationTest {
         }
 
     private companion object {
-        val engine = SyntaxTokenizerEngine()
+        val engine = SyntaxTokenizer()
     }
 }
