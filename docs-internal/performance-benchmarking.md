@@ -10,7 +10,7 @@ part of normal validation or `check`.
 Run the combined benchmark from the SyntaxMP root:
 
 ```bash
-../gradlew -p . :syntaxmp-benchmarks:runSyntaxMpBenchmarks
+./gradlew :syntaxmp-benchmarks:runSyntaxMpBenchmarks
 ```
 
 SyntaxMP intentionally has one normal benchmark task. The generated report keeps the interpretation
@@ -24,7 +24,7 @@ models separate inside one document:
 For Kotlin hot-path profiling, use the benchmark-local JFR task:
 
 ```bash
-../gradlew -p . :syntaxmp-benchmarks:runKotlinHotPathProfiling
+./gradlew :syntaxmp-benchmarks:runKotlinHotPathProfiling
 ```
 
 ## Representative Language Fixtures
@@ -79,7 +79,7 @@ Set these environment variables when you need more specific local metadata than 
 ```bash
 SYNTAXMP_BENCHMARK_CPU="Local workstation" \
 SYNTAXMP_BENCHMARK_POWER="AC power" \
-../gradlew -p . :syntaxmp-benchmarks:runSyntaxMpBenchmarks
+./gradlew :syntaxmp-benchmarks:runSyntaxMpBenchmarks
 ```
 
 Do not treat a checked-in machine description as the project baseline. For a performance change,
@@ -124,9 +124,8 @@ Use `syntaxmp.benchmark.compareTo` to compare the current run against a previous
 can point to a historical run directory, `metadata.json`, or `report.md`:
 
 ```bash
-../gradlew \
+./gradlew \
   -Dsyntaxmp.benchmark.compareTo=syntaxmp-benchmarks/build/reports/syntaxmp-benchmarks/runs/<timestamp>/metadata.json \
-  -p . \
   :syntaxmp-benchmarks:runSyntaxMpBenchmarks
 ```
 
@@ -145,8 +144,7 @@ scrape Markdown tables and does not run in-process benchmark repeats.
 Pass at least three historical run directories or `metadata.json` files as a comma-separated list:
 
 ```bash
-../gradlew \
-  -p . \
+./gradlew \
   -Dsyntaxmp.benchmark.aggregateRuns=<run-a>,<run-b>,<run-c> \
   :syntaxmp-benchmarks:aggregateSyntaxMpBenchmarkRuns
 ```
@@ -302,7 +300,7 @@ constant at 500 KiB, then split that same payload across 1, 10, 100, and 1000 re
 - `range walk no copy` checks the range loop and checksum overhead without creating child strings.
 - `substring copy only` performs the same `String.substring(...)` copies used before embedded
   routing.
-- `public embedded route` routes each copied child string through `SyntaxTokenizerEngine` to a
+- `public embedded route` routes each copied child string through `SyntaxTokenizer` to a
   child extension tokenizer that emits one span, isolating copy plus engine routing without a
   realistic child scanner dominating the result.
 
@@ -332,7 +330,7 @@ real host profiling shows large embedded regions causing memory pressure or GC c
 
 The incremental-tokenization decision:
 
-- Do not add mutable full-result caching to `SyntaxTokenizerEngine`.
+- Do not add mutable full-result caching to `SyntaxTokenizer`.
 - Keep full-result caching host-owned and keyed by engine identity, language label, and content
   revision or hash.
 - After the Plan 31 Kotlin scanner fixes, representative Kotlin rows are no longer the outlier that

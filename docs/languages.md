@@ -1,6 +1,6 @@
 # Built-in languages
 
-This document lists the languages SyntaxMP ships with built-in tokenizers for. Each section gives the canonical `SyntaxLanguageId` constant, the label aliases that resolve to that language through `SyntaxTokenizerEngine.resolveLanguageId(languageLabel)`, any embedded languages the tokenizer can route into for embedded content, and the full table of roles the tokenizer can emit.
+This document lists the languages SyntaxMP ships with built-in tokenizers for. Each section gives the canonical `LanguageId` constant, the label aliases that resolve to that language through `SyntaxTokenizer.resolveLanguageId(languageLabel)`, any embedded languages the tokenizer can route into for embedded content, and the full table of roles the tokenizer can emit.
 
 For background on what roles are and how the tree is shaped, see [syntax-roles.md](syntax-roles.md).
 
@@ -8,7 +8,7 @@ For background on what roles are and how the tree is shaped, see [syntax-roles.m
 
 Each section below lists, for one built-in language:
 
-- **Language id**: the canonical `SyntaxLanguageId` constant.
+- **Language id**: the canonical `LanguageId` constant.
 - **Aliases**: every label that resolves to this language.
 - **Embedded languages**: when present, the other languages this tokenizer can route into for embedded content.
 - **Prose notes**: anything special about how this language tokenizes (embedded-language routing, frontmatter handling, raw-text regions, etc.).
@@ -22,7 +22,7 @@ Languages are listed alphabetically.
 
 ## Bash
 
-- **Language id**: `SyntaxLanguageId.Bash`
+- **Language id**: `LanguageId.Bash`
 - **Aliases**: `bash`
 
 Bash currently reuses the shell scanner while keeping a separate public language identity.
@@ -43,7 +43,7 @@ Bash currently reuses the shell scanner while keeping a separate public language
 
 ## C
 
-- **Language id**: `SyntaxLanguageId.C`
+- **Language id**: `LanguageId.C`
 - **Aliases**: `c`, `h`
 
 | Role | Where emitted | Example |
@@ -67,7 +67,7 @@ Bash currently reuses the shell scanner while keeping a separate public language
 
 ## C#
 
-- **Language id**: `SyntaxLanguageId.CSharp`
+- **Language id**: `LanguageId.CSharp`
 - **Aliases**: `cs`, `c#`, `csharp`
 
 | Role | Where emitted | Example |
@@ -91,7 +91,7 @@ Bash currently reuses the shell scanner while keeping a separate public language
 
 ## C++
 
-- **Language id**: `SyntaxLanguageId.Cpp`
+- **Language id**: `LanguageId.Cpp`
 - **Aliases**: `cc`, `c++`, `cpp`, `cxx`, `hpp`
 
 | Role | Where emitted | Example |
@@ -116,7 +116,7 @@ Bash currently reuses the shell scanner while keeping a separate public language
 
 ## CSS
 
-- **Language id**: `SyntaxLanguageId.Css`
+- **Language id**: `LanguageId.Css`
 - **Aliases**: `css`
 
 | Role | Where emitted | Example |
@@ -139,7 +139,7 @@ Bash currently reuses the shell scanner while keeping a separate public language
 
 ## CSV
 
-- **Language id**: `SyntaxLanguageId.Csv`
+- **Language id**: `LanguageId.Csv`
 - **Aliases**: `csv`
 
 | Role | Where emitted | Example |
@@ -148,7 +148,7 @@ Bash currently reuses the shell scanner while keeping a separate public language
 
 ## Dart
 
-- **Language id**: `SyntaxLanguageId.Dart`
+- **Language id**: `LanguageId.Dart`
 - **Aliases**: `dart`
 
 | Role | Where emitted | Example |
@@ -172,7 +172,7 @@ Bash currently reuses the shell scanner while keeping a separate public language
 
 ## Diff
 
-- **Language id**: `SyntaxLanguageId.Diff`
+- **Language id**: `LanguageId.Diff`
 - **Aliases**: `diff`, `patch`
 
 | Role | Where emitted | Example |
@@ -186,7 +186,7 @@ Bash currently reuses the shell scanner while keeping a separate public language
 
 ## Dockerfile
 
-- **Language id**: `SyntaxLanguageId.Dockerfile`
+- **Language id**: `LanguageId.Dockerfile`
 - **Aliases**: `docker`, `dockerfile`, `containerfile`
 - **Embedded languages**: Shell or Bash (`RUN` heredoc bodies shaped as shell scripts)
 
@@ -205,7 +205,7 @@ Heredoc markers and closing delimiters stay Dockerfile strings.
 
 ## Dotenv
 
-- **Language id**: `SyntaxLanguageId.Dotenv`
+- **Language id**: `LanguageId.Dotenv`
 - **Aliases**: `dotenv`, `env`
 
 Dotenv currently reuses the INI/key-value scanner while keeping a separate public language identity.
@@ -224,7 +224,7 @@ Dotenv currently reuses the INI/key-value scanner while keeping a separate publi
 
 ## Go
 
-- **Language id**: `SyntaxLanguageId.Go`
+- **Language id**: `LanguageId.Go`
 - **Aliases**: `go`, `golang`
 
 | Role | Where emitted | Example |
@@ -247,7 +247,7 @@ Dotenv currently reuses the INI/key-value scanner while keeping a separate publi
 
 ## GraphQL
 
-- **Language id**: `SyntaxLanguageId.GraphQl`
+- **Language id**: `LanguageId.GraphQl`
 - **Aliases**: `graphql`, `gql`
 
 | Role | Where emitted | Example |
@@ -266,7 +266,7 @@ Dotenv currently reuses the INI/key-value scanner while keeping a separate publi
 
 ## HTML
 
-- **Language id**: `SyntaxLanguageId.Html`
+- **Language id**: `LanguageId.Html`
 - **Aliases**: `html`, `htm`
 - **Embedded languages**: JavaScript (`<script>` bodies), CSS (`<style>` bodies)
 
@@ -286,7 +286,7 @@ Attribute values are not delegated to child tokenizers.
 
 ## INI
 
-- **Language id**: `SyntaxLanguageId.Ini`
+- **Language id**: `LanguageId.Ini`
 - **Aliases**: `ini`
 
 | Role | Where emitted | Example |
@@ -303,7 +303,7 @@ Attribute values are not delegated to child tokenizers.
 
 ## Java
 
-- **Language id**: `SyntaxLanguageId.Java`
+- **Language id**: `LanguageId.Java`
 - **Aliases**: `java`
 
 | Role | Where emitted | Example |
@@ -328,7 +328,7 @@ Attribute values are not delegated to child tokenizers.
 
 ## JavaScript
 
-- **Language id**: `SyntaxLanguageId.JavaScript`
+- **Language id**: `LanguageId.JavaScript`
 - **Aliases**: `js`, `javascript`
 
 | Role | Where emitted | Example |
@@ -352,7 +352,7 @@ Attribute values are not delegated to child tokenizers.
 
 ## JSON
 
-- **Language id**: `SyntaxLanguageId.Json`
+- **Language id**: `LanguageId.Json`
 - **Aliases**: `json`
 
 | Role | Where emitted | Example |
@@ -367,7 +367,7 @@ Attribute values are not delegated to child tokenizers.
 
 ## JSX
 
-- **Language id**: `SyntaxLanguageId.Jsx`
+- **Language id**: `LanguageId.Jsx`
 - **Aliases**: `jsx`
 - **Embedded languages**: JavaScript (top-level code and curly-brace expression islands)
 
@@ -387,7 +387,7 @@ JSX is JavaScript with embedded component markup. Top-level code emits JavaScrip
 
 ## Kotlin
 
-- **Language id**: `SyntaxLanguageId.Kotlin`
+- **Language id**: `LanguageId.Kotlin`
 - **Aliases**: `kt`, `kts`, `gradle.kts`
 
 | Role | Where emitted | Example            |
@@ -415,7 +415,7 @@ JSX is JavaScript with embedded component markup. Top-level code emits JavaScrip
 
 ## Makefile
 
-- **Language id**: `SyntaxLanguageId.Makefile`
+- **Language id**: `LanguageId.Makefile`
 - **Aliases**: `make`, `makefile`, `mk`
 
 | Role | Where emitted | Example |
@@ -429,7 +429,7 @@ JSX is JavaScript with embedded component markup. Top-level code emits JavaScrip
 
 ## Markdown
 
-- **Language id**: `SyntaxLanguageId.Markdown`
+- **Language id**: `LanguageId.Markdown`
 - **Aliases**: `md`, `markdown`
 - **Embedded languages**: any registered language (fenced-code bodies, via fence-language label)
 
@@ -462,7 +462,7 @@ Fence markers and labels keep the Markdown roles listed below.
 
 ## PHP
 
-- **Language id**: `SyntaxLanguageId.Php`
+- **Language id**: `LanguageId.Php`
 - **Aliases**: `php`
 
 | Role | Where emitted | Example |
@@ -486,7 +486,7 @@ Fence markers and labels keep the Markdown roles listed below.
 
 ## PostgreSQL
 
-- **Language id**: `SyntaxLanguageId.Postgresql`
+- **Language id**: `LanguageId.Postgresql`
 - **Aliases**: `pgsql`, `postgres`, `postgresql`
 
 | Role | Where emitted | Example |
@@ -507,7 +507,7 @@ Fence markers and labels keep the Markdown roles listed below.
 
 ## PowerShell
 
-- **Language id**: `SyntaxLanguageId.PowerShell`
+- **Language id**: `LanguageId.PowerShell`
 - **Aliases**: `ps`, `ps1`, `powershell`
 
 | Role | Where emitted | Example |
@@ -527,7 +527,7 @@ Fence markers and labels keep the Markdown roles listed below.
 
 ## Properties
 
-- **Language id**: `SyntaxLanguageId.Properties`
+- **Language id**: `LanguageId.Properties`
 - **Aliases**: `properties`
 
 Properties currently reuses the INI/key-value scanner while keeping a separate public language identity.
@@ -546,7 +546,7 @@ Properties currently reuses the INI/key-value scanner while keeping a separate p
 
 ## Protobuf
 
-- **Language id**: `SyntaxLanguageId.Protobuf`
+- **Language id**: `LanguageId.Protobuf`
 - **Aliases**: `proto`, `protobuf`
 
 | Role | Where emitted | Example |
@@ -566,7 +566,7 @@ Properties currently reuses the INI/key-value scanner while keeping a separate p
 
 ## Python
 
-- **Language id**: `SyntaxLanguageId.Python`
+- **Language id**: `LanguageId.Python`
 - **Aliases**: `py`, `python`
 
 | Role | Where emitted | Example |
@@ -589,7 +589,7 @@ Properties currently reuses the INI/key-value scanner while keeping a separate p
 
 ## Ruby
 
-- **Language id**: `SyntaxLanguageId.Ruby`
+- **Language id**: `LanguageId.Ruby`
 - **Aliases**: `rb`, `ruby`
 
 | Role | Where emitted | Example |
@@ -611,7 +611,7 @@ Properties currently reuses the INI/key-value scanner while keeping a separate p
 
 ## Rust
 
-- **Language id**: `SyntaxLanguageId.Rust`
+- **Language id**: `LanguageId.Rust`
 - **Aliases**: `rs`, `rust`
 
 | Role | Where emitted | Example |
@@ -635,7 +635,7 @@ Properties currently reuses the INI/key-value scanner while keeping a separate p
 
 ## Shell
 
-- **Language id**: `SyntaxLanguageId.Shell`
+- **Language id**: `LanguageId.Shell`
 - **Aliases**: `shell`, `sh`
 
 | Role | Where emitted | Example |
@@ -654,7 +654,7 @@ Properties currently reuses the INI/key-value scanner while keeping a separate p
 
 ## SQL
 
-- **Language id**: `SyntaxLanguageId.Sql`
+- **Language id**: `LanguageId.Sql`
 - **Aliases**: `sql`
 
 | Role | Where emitted | Example |
@@ -676,7 +676,7 @@ Properties currently reuses the INI/key-value scanner while keeping a separate p
 
 ## SQLite
 
-- **Language id**: `SyntaxLanguageId.Sqlite`
+- **Language id**: `LanguageId.Sqlite`
 - **Aliases**: `sqlite`, `sqlite3`
 
 | Role | Where emitted | Example |
@@ -698,7 +698,7 @@ Properties currently reuses the INI/key-value scanner while keeping a separate p
 
 ## Swift
 
-- **Language id**: `SyntaxLanguageId.Swift`
+- **Language id**: `LanguageId.Swift`
 - **Aliases**: `swift`
 
 | Role | Where emitted | Example |
@@ -724,7 +724,7 @@ Properties currently reuses the INI/key-value scanner while keeping a separate p
 
 ## TOML
 
-- **Language id**: `SyntaxLanguageId.Toml`
+- **Language id**: `LanguageId.Toml`
 - **Aliases**: `toml`
 
 | Role | Where emitted | Example |
@@ -741,7 +741,7 @@ Properties currently reuses the INI/key-value scanner while keeping a separate p
 
 ## TSX
 
-- **Language id**: `SyntaxLanguageId.Tsx`
+- **Language id**: `LanguageId.Tsx`
 - **Aliases**: `tsx`
 - **Embedded languages**: TypeScript (top-level code and curly-brace expression islands)
 
@@ -763,7 +763,7 @@ TSX is the TypeScript counterpart to [JSX](#jsx). Top-level code emits TypeScrip
 
 ## TypeScript
 
-- **Language id**: `SyntaxLanguageId.TypeScript`
+- **Language id**: `LanguageId.TypeScript`
 - **Aliases**: `ts`, `typescript`
 
 | Role | Where emitted | Example |
@@ -787,7 +787,7 @@ TSX is the TypeScript counterpart to [JSX](#jsx). Top-level code emits TypeScrip
 
 ## XML
 
-- **Language id**: `SyntaxLanguageId.Xml`
+- **Language id**: `LanguageId.Xml`
 - **Aliases**: `xml`
 
 | Role | Where emitted | Example |
@@ -804,7 +804,7 @@ TSX is the TypeScript counterpart to [JSX](#jsx). Top-level code emits TypeScrip
 
 ## YAML
 
-- **Language id**: `SyntaxLanguageId.Yaml`
+- **Language id**: `LanguageId.Yaml`
 - **Aliases**: `yml`, `yaml`
 
 | Role | Where emitted | Example |
@@ -823,7 +823,7 @@ TSX is the TypeScript counterpart to [JSX](#jsx). Top-level code emits TypeScrip
 
 ## Zsh
 
-- **Language id**: `SyntaxLanguageId.Zsh`
+- **Language id**: `LanguageId.Zsh`
 - **Aliases**: `zsh`
 
 Zsh currently reuses the shell scanner while keeping a separate public language identity.

@@ -89,7 +89,7 @@ The primary construction path is a direct `SyntaxTheme(...)` call:
 ```kotlin
 data class SyntaxTheme(
     val roleStyles: SyntaxRoleStyles = SyntaxRoleStyles(),
-    val languageOverrides: Map<SyntaxLanguageId, SyntaxRoleStyles> = emptyMap(),
+    val languageOverrides: Map<LanguageId, SyntaxRoleStyles> = emptyMap(),
 )
 ```
 
@@ -116,11 +116,11 @@ val theme = SyntaxTheme(
         SyntaxRole.Markup to SyntaxStyle(color = Color(0xFF475569)),
     ),
     languageOverrides = mapOf(
-        SyntaxLanguageId.Kotlin to SyntaxRoleStyles(
+        LanguageId.Kotlin to SyntaxRoleStyles(
             SyntaxRole.Keyword.Control to SyntaxStyle(fontWeight = FontWeight.Bold),
             SyntaxRole.Variable.Parameter to SyntaxStyle(color = Color(0xFF7DCFFF)),
         ),
-        SyntaxLanguageId.fromString("myql") to SyntaxRoleStyles(
+        LanguageId.fromString("myql") to SyntaxRoleStyles(
             SyntaxRole.of("custom.myql.directive") to SyntaxStyle(
                 color = Color(0xFF9333EA),
                 fontWeight = FontWeight.SemiBold,
@@ -130,7 +130,7 @@ val theme = SyntaxTheme(
 )
 ```
 
-Language-override keys are `SyntaxLanguageId` values, so they participate in the same canonical-id discipline as everything else: a built-in like `SyntaxLanguageId.Kotlin` matches whatever the tokenizer puts on `SyntaxTokenSpan.languageId`, and a custom language registered through `SyntaxLanguageId.fromString("myql")` matches when an extension tokenizer emits spans for that id.
+Language-override keys are `LanguageId` values, so they participate in the same canonical-id discipline as everything else: a built-in like `LanguageId.Kotlin` matches whatever the tokenizer puts on `SyntaxTokenSpan.languageId`, and a custom language registered through `LanguageId.fromString("myql")` matches when an extension tokenizer emits spans for that id.
 
 ## Resolution policy
 
@@ -145,7 +145,7 @@ For each `SyntaxTokenSpan`, `SyntaxTheme.resolveSpanStyle(span)` does this:
 
 ### Worked example 1: `keyword.declaration` in `kotlin`
 
-Given the theme above and a `SyntaxTokenSpan` with `role = keyword.declaration`, `languageId = SyntaxLanguageId.Kotlin`:
+Given the theme above and a `SyntaxTokenSpan` with `role = keyword.declaration`, `languageId = LanguageId.Kotlin`:
 
 | Step | Source | Style contribution | Running result |
 |---|---|---|---|
@@ -158,7 +158,7 @@ Final span style: color `#3B73D9`, font weight semibold.
 
 ### Worked example 2: `keyword.control` in `kotlin`
 
-Same theme. Token span: `role = keyword.control`, `languageId = SyntaxLanguageId.Kotlin`.
+Same theme. Token span: `role = keyword.control`, `languageId = LanguageId.Kotlin`.
 
 | Step | Source | Style contribution | Running result |
 |---|---|---|---|
@@ -205,7 +205,7 @@ val theme = SyntaxTheme(
         SyntaxRole.Comment to SyntaxStyle(color = Color(0xFF7A7F87), fontStyle = FontStyle.Italic),
     ),
     languageOverrides = mapOf(
-        SyntaxLanguageId.Kotlin to SyntaxRoleStyles(
+        LanguageId.Kotlin to SyntaxRoleStyles(
             // Bold control keywords; inherit color from the global Keyword style.
             SyntaxRole.Keyword.Control to SyntaxStyle(fontWeight = FontWeight.Bold),
             // Named arguments at call sites get a distinct tint.
@@ -219,12 +219,12 @@ val theme = SyntaxTheme(
 
 Types are intentionally absent from the Kotlin override: `SyntaxRole.Type` from the global map is already what we want, and not restating it makes the intent clearer.
 
-### Custom extension language registered as `SyntaxLanguageId.fromString("myql")`
+### Custom extension language registered as `LanguageId.fromString("myql")`
 
 When an extension tokenizer emits roles for its own language id, language overrides key on that same id:
 
 ```kotlin
-val myql = SyntaxLanguageId.fromString("myql")
+val myql = LanguageId.fromString("myql")
 
 val theme = SyntaxTheme(
     roleStyles = SyntaxRoleStyles(
@@ -254,8 +254,8 @@ For narrow edits like "I want `DefaultDark` with a different keyword color", fou
 
 ```kotlin
 fun SyntaxTheme.withRoleStyle(role: SyntaxRole, style: SyntaxStyle): SyntaxTheme
-fun SyntaxTheme.withLanguageRoleStyle(languageId: SyntaxLanguageId, role: SyntaxRole, style: SyntaxStyle): SyntaxTheme
-fun SyntaxTheme.withLanguageRoleStyles(languageId: SyntaxLanguageId, styles: SyntaxRoleStyles?): SyntaxTheme
+fun SyntaxTheme.withLanguageRoleStyle(languageId: LanguageId, role: SyntaxRole, style: SyntaxStyle): SyntaxTheme
+fun SyntaxTheme.withLanguageRoleStyles(languageId: LanguageId, styles: SyntaxRoleStyles?): SyntaxTheme
 fun SyntaxRoleStyles.withRoleStyle(role: SyntaxRole, style: SyntaxStyle): SyntaxRoleStyles
 ```
 
@@ -269,7 +269,7 @@ val brand = SyntaxTheme.DefaultDark
     )
 
 // Remove a previously-set language override entirely:
-val cleared = brand.withLanguageRoleStyles(languageId = SyntaxLanguageId.Kotlin, styles = null)
+val cleared = brand.withLanguageRoleStyles(languageId = LanguageId.Kotlin, styles = null)
 ```
 
 Each helper call allocates a fresh `SyntaxTheme` and one or two new maps, so a long chain creates intermediate themes that are immediately discarded. That cost is negligible for one-time theme setup, but for building a theme with many roles, direct `SyntaxTheme(...)` construction is clearer and lighter.
@@ -295,7 +295,7 @@ fun AppSyntaxTheme(
 fun CodeSnippet(
     code: String,
     languageLabel: String?,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
 ) {
     BasicText(
         text = rememberSyntaxAnnotatedString(
@@ -341,7 +341,7 @@ Each `SyntaxTokenSpan` carries its role and `languageId`, so a `when` on either 
 ## Where to go next
 
 - [docs/syntax-roles.md](syntax-roles.md): the roles primer. Root and refinement constants, custom-role factories.
-- [docs/languages.md](languages.md): per-language catalog of every role each built-in tokenizer emits, plus aliases, `SyntaxLanguageId` constants, and embedded-language routing.
+- [docs/languages.md](languages.md): per-language catalog of every role each built-in tokenizer emits, plus aliases, `LanguageId` constants, and embedded-language routing.
 - [docs/language-extension.md](language-extension.md): adding a custom language so you have something to theme.
 - [docs/building-an-editor.md](building-an-editor.md): applying the resolved spans to read-only renders and editable text fields.
 - [docs/architecture.md](architecture.md): where theme resolution sits in the broader pipeline.

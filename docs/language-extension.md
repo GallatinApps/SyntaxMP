@@ -1,6 +1,6 @@
 # Adding a Language Extension
 
-This guide is for hosts that want SyntaxMP to highlight a language it doesn't ship out of the box. You register a `SyntaxLanguageExtension` and your tokenizer runs inside the same engine that drives the built-ins, with the same `SyntaxTokenSpan` output, the same normalization pass, and the same `SyntaxTheme` resolution.
+This guide is for hosts that want SyntaxMP to highlight a language it doesn't ship out of the box. You register a `LanguageExtension` and your tokenizer runs inside the same engine that drives the built-ins, with the same `SyntaxTokenSpan` output, the same normalization pass, and the same `SyntaxTheme` resolution.
 
 If you're contributing a tokenizer *to the library itself* rather than adding one in a host app, the maintainer-facing SOP in [docs-internal/adding-a-built-in-language.md](../docs-internal/adding-a-built-in-language.md) is the deeper reference.
 
@@ -13,38 +13,34 @@ Two paths:
 
 This doc covers the extension path.
 
-## The `SyntaxTokenizer` contract
+## The `LanguageTokenizer` contract
 
 ```kotlin
-fun interface SyntaxTokenizer {
-    fun tokenize(request: SyntaxTokenizeRequest): SyntaxTokenizeResult
+fun interface LanguageTokenizer {
+    fun tokenize(request: TokenizeRequest): List<SyntaxTokenSpan>
 }
 
-class SyntaxTokenizeRequest(
+class TokenizeRequest(
     val code: String,
-    val languageId: SyntaxLanguageId,
+    val languageId: LanguageId,
 ) {
     fun tokenizeEmbedded(code: String, languageLabel: String): List<SyntaxTokenSpan>
 }
-
-data class SyntaxTokenizeResult(
-    val spans: List<SyntaxTokenSpan> = emptyList(),
-)
 
 data class SyntaxTokenSpan(
     val start: Int,
     val endExclusive: Int,
     val role: SyntaxRole,
-    val languageId: SyntaxLanguageId,
+    val languageId: LanguageId,
 )
 ```
 
 Four rules:
 
 - **UTF-16 offsets, half-open.** `start..<endExclusive` over `request.code`. Spans that fall outside the code length, have `endExclusive <= start`, or overflow are clipped or dropped by the engine's normalizer; you don't need to defend against them yourself, but you should aim for cleanly bounded spans.
-- **Exception-safe by design.** If your tokenizer throws, the engine catches the failure and returns an empty span list for that call. Buggy tokenizers can never crash text rendering, but a silently-throwing tokenizer also produces no highlighting, so add tests. If you want logging, wrap your tokenizer body in `try/catch` and return `SyntaxTokenizeResult()` on failure.
+- **Exception-safe by design.** If your tokenizer throws, the engine catches the failure and returns an empty span list for that call. Buggy tokenizers can never crash text rendering, but a silently-throwing tokenizer also produces no highlighting, so add tests. If you want logging, wrap your tokenizer body in `try/catch` and return `emptyList()` on failure.
 - **Stateless across calls.** The engine shares one tokenizer across compositions and threads. Keep per-call state on the stack; don't mutate instance fields.
-- **Embedded routing is request-scoped.** Tokenizers called by `SyntaxTokenizerEngine` can call `request.tokenizeEmbedded(code, languageLabel)` to route a child region through the same engine. Requests you construct manually with `SyntaxTokenizeRequest(code, languageId)` return an empty list from that method because they are not bound to an engine.
+- **Embedded routing is request-scoped.** Tokenizers called by a `SyntaxTokenizer` engine can call `request.tokenizeEmbedded(code, languageLabel)` to route a child region through the same engine. Requests you construct manually with `TokenizeRequest(code, languageId)` return an empty list from that method because they are not bound to an engine.
 
 The engine also runs a `normalizer` pass on whatever you return: spans may overlap, sit out of order, or be adjacent. At each character position the smallest / most-specific span wins, and adjacent runs of the same role *and* language are merged. This means you can emit a broad span and then narrower spans on top, and the normalizer will resolve precedence deterministically.
 
@@ -53,17 +49,16 @@ The engine also runs a `normalizer` pass on whatever you return: spans may overl
 The example below highlights a tiny made-up SQL-like language: `--` line comments, single-quoted strings with `''` escape, a small keyword set, decimal numbers, and a language-specific directive prefix (`@@directive`) the host wants themed distinctly.
 
 ```kotlin
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageExtension
-import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.language.LanguageExtension
+import com.gallatinapps.syntaxmp.role.SyntaxRole
+import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
+import com.gallatinapps.syntaxmp.tokenizer.LanguageTokenizer
+import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer
 
 // One canonical id for the language; share this constant everywhere the language
 // is referenced (engine extension, language overrides in the theme, host UI).
-val MyqlLanguage: SyntaxLanguageId = SyntaxLanguageId.fromString("myql")
+val MyqlLanguage: LanguageId = LanguageId.fromString("myql")
 
 // Custom dotted role for the @@directive form, anchored under the built-in
 // `keyword` root so themes that style `SyntaxRole.Keyword` cover this role for
@@ -75,7 +70,7 @@ private val MyqlKeywords: Set<String> = setOf(
     "select", "from", "where", "and", "or", "not", "as", "limit",
 )
 
-val MyqlTokenizer = SyntaxTokenizer { request ->
+val MyqlTokenizer = LanguageTokenizer { request ->
     val code = request.code
     val languageId = request.languageId
     val spans = mutableListOf<SyntaxTokenSpan>()
@@ -156,12 +151,12 @@ val MyqlTokenizer = SyntaxTokenizer { request ->
         }
     }
 
-    SyntaxTokenizeResult(spans)
+    spans
 }
 
-val engine = SyntaxTokenizerEngine(
+val engine = SyntaxTokenizer(
     extensions = listOf(
-        SyntaxLanguageExtension(
+        LanguageExtension(
             languageId = MyqlLanguage,
             aliases = setOf("mql"),
             tokenizer = MyqlTokenizer,
@@ -172,7 +167,7 @@ val engine = SyntaxTokenizerEngine(
 
 A few things the example is doing on purpose:
 
-- **One canonical `SyntaxLanguageId` constant.** `SyntaxLanguageId.fromString("myql")` trims and lowercases its input but does not resolve aliases; it just creates an exact language id. Share the constant everywhere so theme overrides and tokenizer output agree on a single value.
+- **One canonical `LanguageId` constant.** `LanguageId.fromString("myql")` trims and lowercases its input but does not resolve aliases; it just creates an exact language id. Share the constant everywhere so theme overrides and tokenizer output agree on a single value.
 - **Every span carries `languageId = request.languageId`.** Stamping each span with the resolved language id is how `SyntaxTheme.languageOverrides` keyed on `MyqlLanguage` knows to apply.
 - **Anchor custom roles under existing roots when you can.** `SyntaxRole.Keyword.append("myql.directive")` produces a `keyword.myql.directive` role that automatically inherits any global `keyword` style through the resolver's parent walk. New custom languages get sensible default styling under `SyntaxTheme.DefaultLight` / `DefaultDark` and under any host theme that styles the built-in roots. Refine with a per-language override on the dotted path when you want a distinct look.
 - **`SyntaxRole.of(...)` for genuinely standalone roles.** `SyntaxRole.of("custom.myql.directive")` produces a fully custom role with that exact dotted path. There is no parent-role fallback under any built-in root, so themes that don't explicitly style it contribute no spans. Use `SyntaxRole.of(...)` when you specifically want no cascade, typically when the extension ships its own theme.
@@ -183,9 +178,9 @@ A few things the example is doing on purpose:
 This example highlights `{{ ... }}` blocks in a tiny template language by routing their body to JavaScript. `request.tokenizeEmbedded(...)` returns child spans relative to the child string, so the extension offsets them into the parent document before returning.
 
 ```kotlin
-val TinyTemplateLanguage: SyntaxLanguageId = SyntaxLanguageId.fromString("tiny-template")
+val TinyTemplateLanguage: LanguageId = LanguageId.fromString("tiny-template")
 
-val TinyTemplateTokenizer = SyntaxTokenizer { request ->
+val TinyTemplateTokenizer = LanguageTokenizer { request ->
     val code = request.code
     val spans = mutableListOf<SyntaxTokenSpan>()
     var i = 0
@@ -230,7 +225,7 @@ val TinyTemplateTokenizer = SyntaxTokenizer { request ->
         i = close + 2
     }
 
-    SyntaxTokenizeResult(spans)
+    spans
 }
 ```
 
@@ -238,7 +233,7 @@ The embedded call uses the engine's normal language lookup: extensions first, th
 
 ## Registering aliases
 
-`SyntaxLanguageExtension.aliases` is for labels that should resolve to the extension's `languageId`.
+`LanguageExtension.aliases` is for labels that should resolve to the extension's `languageId`.
 They work at the top-level engine boundary and in routed embedded-language labels such as Markdown fence
 info strings and markup raw-text `lang=` values.
 
@@ -250,7 +245,7 @@ select * from users where id = @@current_user;
 ```
 ```
 
-Top-level raw labels can be passed directly to `SyntaxTokenizerEngine.tokenize`. Use `engine.resolveLanguageId(label)` only when you need the canonical `SyntaxLanguageId` before tokenizing, such as for diagnostics or a language-specific UI affordance.
+Top-level raw labels can be passed directly to `engine.tokenize(...)`. Use `engine.resolveLanguageId(label)` only when you need the canonical `LanguageId` before tokenizing, such as for diagnostics or a language-specific UI affordance.
 
 The same alias also works when a built-in host already exposes a raw-label route. For example,
 `<script lang="mql">...</script>` or `<style lang="mql">...</style>` can route through the extension
@@ -260,13 +255,13 @@ a custom host tokenizer.
 
 ## Overriding a built-in language
 
-Extensions resolve **before** built-ins. Registering a `SyntaxLanguageExtension` whose `languageId` is a built-in `SyntaxLanguageId` causes your tokenizer to handle that language for this engine instance, bypassing the built-in tokenizer.
+Extensions resolve **before** built-ins. Registering a `LanguageExtension` whose `languageId` is a built-in `LanguageId` causes your tokenizer to handle that language for this engine instance, bypassing the built-in tokenizer.
 
 ```kotlin
-val engine = SyntaxTokenizerEngine(
+val engine = SyntaxTokenizer(
     extensions = listOf(
-        SyntaxLanguageExtension(
-            languageId = SyntaxLanguageId.Kotlin,
+        LanguageExtension(
+            languageId = LanguageId.Kotlin,
             tokenizer = MyCustomKotlinTokenizer,
         ),
     ),
@@ -277,7 +272,7 @@ Useful when you need a domain-specific dialect or want to test an experimental t
 
 ## Theming a custom language
 
-Per-language overrides live on `SyntaxTheme.languageOverrides`. The map key is the same `SyntaxLanguageId` value your tokenizer stamps on each span, so the lookup is exact:
+Per-language overrides live on `SyntaxTheme.languageOverrides`. The map key is the same `LanguageId` value your tokenizer stamps on each span, so the lookup is exact:
 
 ```kotlin
 val theme = SyntaxTheme.DefaultDark
@@ -311,9 +306,9 @@ import kotlin.test.assertTrue
 
 class MyqlTokenizerTest {
 
-    private val engine = SyntaxTokenizerEngine(
+    private val engine = SyntaxTokenizer(
         extensions = listOf(
-            SyntaxLanguageExtension(
+            LanguageExtension(
                 languageId = MyqlLanguage,
                 tokenizer = MyqlTokenizer,
             ),

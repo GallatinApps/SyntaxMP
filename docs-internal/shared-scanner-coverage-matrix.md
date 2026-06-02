@@ -1,27 +1,27 @@
 # Shared Scanner Coverage Matrix
 
-This matrix records the behavior baseline and ownership map for SyntaxMP's shared scanners. Shared scanner mechanics live under `engine/scanners/`, language-owned scanners under `languages/<language>/`, and language vocabulary inside per-language `*Lexicon.kt` files; tokenizers own scanner options and direct scanner inputs. See [`AGENTS.md`](../AGENTS.md) for the authoritative package-ownership rules.
+This matrix records the behavior baseline and ownership map for SyntaxMP's shared scanners. Shared scanner mechanics live under `scanners/`, language-owned scanners under `builtins/<language>/`, and language vocabulary inside per-language `*Lexicon.kt` files; tokenizers own scanner options and direct scanner inputs. See [`AGENTS.md`](../AGENTS.md) for the authoritative package-ownership rules.
 
 Validation command:
 
 ```bash
-./gradlew :syntaxmp:jvmTest :syntaxmp:compileKotlinJvm
+./gradlew :syntaxmp-tokenizer:jvmTest :syntaxmp-tokenizer:compileKotlinJvm
 ```
 
 Target no-language-name scanner grep:
 
 ```bash
 rg -n "Kotlin|Swift|CSharp|Rust|Cpp|Dart|Ruby|Php|Python|Jsx|Tsx|ComponentMarkup" \
-  syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/scanners/clike/CLikeScanner.kt \
-  syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/scanners/script/ScriptLikeScanner.kt \
-  syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/scanners/markup/MarkupScanner.kt
+  syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/scanners/clike/CLikeScanner.kt \
+  syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/scanners/script/ScriptLikeScanner.kt \
+  syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/scanners/markup/MarkupScanner.kt
 ```
 
 Language names remain valid in language tokenizer files, language lexicon files, fixture file names, docs, and language-owned role scope strings.
 
 ## Shared Scanner Rule
 
-Shared scanners may reference generic syntax concepts and reusable lexical shapes. Shared scanners may not reference consuming language names. Language tokenizers own scanner options, direct scanner inputs, and language-specific roles. Language lexicons own keywords, constants, builtins, type names, directives, at-rules, raw-text tag names, embedded-language aliases, and role-specific word or prefix sets. `engine/scanners/markup/` is the single shared markup scanner home; markup raw-text label resolution lives there too.
+Shared scanners may reference generic syntax concepts and reusable lexical shapes. Shared scanners may not reference consuming language names. Language tokenizers own scanner options, direct scanner inputs, and language-specific roles. Language lexicons own keywords, constants, builtins, type names, directives, at-rules, raw-text tag names, embedded-language aliases, and role-specific word or prefix sets. `scanners/markup/` is the single shared markup scanner home; markup raw-text label resolution lives there too.
 
 ## C-Like Scanner
 
@@ -50,7 +50,7 @@ Shared scanners may reference generic syntax concepts and reusable lexical shape
 
 ## CSS-Family Scanner
 
-`CssScanner` is primary-language-owned under `languages/css/`.
+`CssScanner` is primary-language-owned under `builtins/css/`.
 
 | Language | Scanner | Covered lexical forms | Fixture status | Tokenizer/lexicon-owned behavior |
 |---|---|---|---|---|
@@ -58,7 +58,7 @@ Shared scanners may reference generic syntax concepts and reusable lexical shape
 
 ## Primary-Language Family Scanners
 
-`SqlScanner` is primary-language-owned under `languages/sql/`. SQLite and PostgreSQL import it directly, but build their own scanner inputs from their own lexicons. `IniScanner` and `ShellScanner` are primary-language-owned under `languages/ini/` and `languages/shell/`; separate public identities can reuse those scanner mechanics from their own tokenizer packages.
+`SqlScanner` is primary-language-owned under `builtins/sql/`. SQLite and PostgreSQL import it directly, but build their own scanner inputs from their own lexicons. `IniScanner` and `ShellScanner` are primary-language-owned under `builtins/ini/` and `builtins/shell/`; separate public identities can reuse those scanner mechanics from their own tokenizer packages.
 
 | Language | Scanner | Covered lexical forms | Fixture status | Tokenizer/lexicon-owned behavior |
 |---|---|---|---|---|

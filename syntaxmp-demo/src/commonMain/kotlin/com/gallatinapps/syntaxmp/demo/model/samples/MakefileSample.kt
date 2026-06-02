@@ -16,11 +16,11 @@ internal val MakefileSample = """
     |${'\t'}${'$'}(BROWSER) http://localhost:8080/
     |
     |test:
-    |${'\t'}${'$'}(GRADLE) ${'$'}(GRADLE_FLAGS) :syntaxmp:jvmTest :syntaxmp-demo:wasmJsBrowserTest
+    |${'\t'}${'$'}(GRADLE) ${'$'}(GRADLE_FLAGS) :syntaxmp-tokenizer:jvmTest :syntaxmp:jvmTest :syntaxmp-demo:wasmJsBrowserTest
     |
     |dist:
     |${'\t'}${'$'}(GRADLE) :syntaxmp-demo:wasmJsBrowserDistribution
     |
     |clean:
-    |${'\t'}rm -rf build SyntaxMP/build SyntaxMP/syntaxmp-demo/build
+    |${'\t'}rm -rf build SyntaxMP/build SyntaxMP/syntaxmp-tokenizer/build SyntaxMP/syntaxmp/build SyntaxMP/syntaxmp-demo/build
 """.trimMargin()

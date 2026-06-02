@@ -10,7 +10,7 @@ Purpose-built lexical tokenizers, role-based theming, and drop-in Compose text h
 [![Compose Multiplatform](https://img.shields.io/badge/Compose-1.11.0-4285F4?logo=jetpackcompose&logoColor=white)](https://www.jetbrains.com/compose-multiplatform/)
 [![Platforms](https://img.shields.io/badge/Platforms-JVM%20%7C%20Android%20%7C%20iOS%20%7C%20Wasm-blue)](#)
 [![Demo](https://img.shields.io/badge/demo-demo.syntaxmp.com-blue)](https://demo.syntaxmp.com)
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](#)
+[![Version](https://img.shields.io/badge/version-0.2.0--SNAPSHOT-blue)](#)
 
 </div>
 
@@ -39,7 +39,7 @@ Purpose-built lexical tokenizers, role-based theming, and drop-in Compose text h
 ## Highlights
 
 - **Pure Kotlin / KMP-clean.** Common code only. No platform shims, no JS bridge, no native parsers, no regex grammars.
-- **Predictable token model.** Each token has one dotted `SyntaxRole` value (`keyword`, `keyword.control`, `variable.parameter`, ...), plus the non-null `SyntaxLanguageId` that produced it. Themes match roles with progressive parent fallback.
+- **Predictable token model.** Each token has one dotted `SyntaxRole` value (`keyword`, `keyword.control`, `variable.parameter`, ...), plus the non-null `LanguageId` that produced it. Themes match roles with progressive parent fallback.
 - **Small, opinionated theme surface.** A `SyntaxStyle` is just color + weight + style. Host `TextStyle` owns font family, size, line height, base color, and backgrounds.
 - **No global state, no auto-detection.** You pass a raw language label such as `"kotlin"` or `"kt"`; the engine resolves built-in aliases and extension aliases. The engine is a pure function of `(code, languageLabel)`. Easy to test, safe to share.
 - **Primitives, not wrappers.** You compose `rememberSyntaxAnnotatedString` + `BasicText` for read-only views, or `buildSyntaxStyledSpans` + `applySyntaxStyledSpans` for `BasicTextField` editors. Engine and theme scoping is the host's choice.
@@ -102,7 +102,7 @@ Purpose-built lexical tokenizers, role-based theming, and drop-in Compose text h
   </tr>
 </table>
 
-Built-in language constants and the built-in set live on [`SyntaxLanguageId`](syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/language/SyntaxLanguageId.kt).
+Built-in language constants and the built-in set live on [`LanguageId`](syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/language/LanguageId.kt).
 
 **Embedded languages** are wired up internally for HTML script/style blocks, Markdown fenced code, and the script/style regions of JSX and TSX. See [docs/embedded-languages.md](docs/embedded-languages.md) for the full routing table and what's deliberately out of scope.
 
@@ -116,7 +116,7 @@ SyntaxMP targets **JVM**, **Android**, **iOS arm64**, **iOS simulator arm64**, a
 
 ```toml
 [versions]
-syntaxmpVersion = "0.1.0"
+syntaxmpVersion = "0.2.0-SNAPSHOT"
 
 [libraries]
 syntaxmp = { module = "com.gallatinapps.syntaxmp:syntaxmp", version.ref = "syntaxmpVersion" }
@@ -133,6 +133,9 @@ kotlin {
     }
 }
 ```
+
+The `syntaxmp` coordinate is the Compose highlighter and pulls in the pure tokenizer layer transitively. Token-only consumers that build their own renderer can depend on `com.gallatinapps.syntaxmp:syntaxmp-tokenizer` directly; see [docs/architecture.md](docs/architecture.md#modules-and-coordinates).
+
 ---
 
 ## Quick start
@@ -146,7 +149,7 @@ SyntaxMP has two Compose paths, depending on whether the text is displayed or ed
 fun CodeSnippet(
     code: String,
     languageLabel: String?,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
     theme: SyntaxTheme,
 ) {
     BasicText(
@@ -168,7 +171,7 @@ fun CodeSnippet(
 fun CodeField(
     state: TextFieldState,
     languageLabel: String?,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
     theme: SyntaxTheme,
 ) {
     BasicTextField(
@@ -231,16 +234,16 @@ See [docs/theming.md](docs/theming.md) for the full role tree, resolution policy
 
 ## Choosing a language subset
 
-By default the engine enables all 39 built-ins. Shrink the surface (smaller construction cost, fewer code paths reachable) by passing a `Set<SyntaxLanguageId>`:
+By default the engine enables all 39 built-ins. Shrink the surface (smaller construction cost, fewer code paths reachable) by passing a `Set<LanguageId>`:
 
 ```kotlin
 val enabledLanguages = setOf(
-    SyntaxLanguageId.Kotlin,
-    SyntaxLanguageId.Json,
-    SyntaxLanguageId.Markdown,
-    SyntaxLanguageId.Shell,
+    LanguageId.Kotlin,
+    LanguageId.Json,
+    LanguageId.Markdown,
+    LanguageId.Shell,
 )
-val engine = SyntaxTokenizerEngine(builtInLanguages = enabledLanguages)
+val engine = SyntaxTokenizer(builtInLanguages = enabledLanguages)
 ```
 
 Labels resolving to a disabled language return `emptyList()`. The engine never throws "unknown language."
@@ -249,14 +252,14 @@ Labels resolving to a disabled language return `emptyList()`. The engine never t
 
 ## Adding your own language
 
-Implement `SyntaxTokenizer`, wrap it in a `SyntaxLanguageExtension`, register the extension on the engine, and your tokenizer runs alongside the built-ins:
+Implement `LanguageTokenizer`, wrap it in a `LanguageExtension`, register the extension on the engine, and your tokenizer runs alongside the built-ins:
 
 ```kotlin
-val myql = SyntaxLanguageId.fromString("myql")
+val myql = LanguageId.fromString("myql")
 
-val engine = SyntaxTokenizerEngine(
+val engine = SyntaxTokenizer(
     extensions = listOf(
-        SyntaxLanguageExtension(
+        LanguageExtension(
             languageId = myql,
             aliases = setOf("mql"),
             tokenizer = myqlTokenizer,
@@ -275,8 +278,8 @@ Extensions resolve before built-ins, so you can override a built-in too. See [do
 - [docs/api.md](docs/api.md): per-symbol API reference for every public type, function, and extension SyntaxMP ships.
 - [docs/theming.md](docs/theming.md): the full theming reference. Role tree, resolution policy, copy/override helpers, per-language overrides.
 - [docs/syntax-roles.md](docs/syntax-roles.md): the roles primer. What a `SyntaxRole` is, the root and refinement constants, and how custom roles work.
-- [docs/languages.md](docs/languages.md): per-language catalog of every role each built-in tokenizer emits, plus aliases, `SyntaxLanguageId` constants, and embedded-language routing.
-- [docs/language-extension.md](docs/language-extension.md): adding a custom language via `SyntaxLanguageExtension`, with a worked tokenizer and a testing recipe.
+- [docs/languages.md](docs/languages.md): per-language catalog of every role each built-in tokenizer emits, plus aliases, `LanguageId` constants, and embedded-language routing.
+- [docs/language-extension.md](docs/language-extension.md): adding a custom language via `LanguageExtension`, with a worked tokenizer and a testing recipe.
 - [docs/building-an-editor.md](docs/building-an-editor.md): building an editable code surface with `BasicTextField`. Engine sharing, line splitting, caching, and large-document guidance.
 - [docs/embedded-languages.md](docs/embedded-languages.md): what SyntaxMP routes automatically for HTML, Markdown, JSX, and TSX, and what it deliberately doesn't.
 
@@ -294,7 +297,7 @@ The engine returns `emptyList()`. `rememberSyntaxAnnotatedString` falls back to 
 
 **My language isn't supported. What should I do?**
 
-You can add project-local support with `SyntaxLanguageExtension`, including aliases and overrides for built-ins. If you want a language added as a built-in, search existing issues first. If there is no issue, open one with the language name, why it belongs in the built-in set, common labels or extensions, and a few representative snippets that should highlight well. PRs are welcome, especially when they start from a working extension, but built-in additions are not guaranteed: the core set stays focused on broadly useful languages so the library remains maintainable.
+You can add project-local support with `LanguageExtension`, including aliases and overrides for built-ins. If you want a language added as a built-in, search existing issues first. If there is no issue, open one with the language name, why it belongs in the built-in set, common labels or extensions, and a few representative snippets that should highlight well. PRs are welcome, especially when they start from a working extension, but built-in additions are not guaranteed: the core set stays focused on broadly useful languages so the library remains maintainable.
 
 **Can I tokenize large files?**
 

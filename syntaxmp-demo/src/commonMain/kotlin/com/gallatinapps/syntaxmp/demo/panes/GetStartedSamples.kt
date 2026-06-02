@@ -2,7 +2,7 @@ package com.gallatinapps.syntaxmp.demo.panes
 
 internal val InstallationCatalogSample = """
 [versions]
-syntaxmp = "0.1.0"
+syntaxmp = "0.2.0-SNAPSHOT"
 
 [libraries]
 syntaxmp = { module = "com.gallatinapps.syntaxmp:syntaxmp", version.ref = "syntaxmp" }
@@ -137,7 +137,7 @@ val engine = SyntaxTokenizer(
         LanguageExtension(
             languageId = myql,
             aliases = setOf("mql"),
-            tokenizer = myqlTokenizer, //Create a custom Tokenizer
+            tokenizer = myqlTokenizer, // Create a custom LanguageTokenizer
         ),
     ),
 )
