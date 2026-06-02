@@ -257,6 +257,18 @@ Both coordinates must be published. The published POM for `syntaxmp` references 
 
 Do not add speculative umbrella or per-language artifacts. Additional renderers, if they are ever added, should be separate coordinates that depend on `syntaxmp-tokenizer`.
 
+## Release Prep
+
+Before cutting a release:
+
+1. Set the root project version in `build.gradle.kts` to the exact release version, with no `-SNAPSHOT` suffix.
+2. Update `CHANGELOG.md` with the release date, notable changes, and compare links for the new tag.
+3. Update public install/version references in `README.md`, including the version badge and version catalog snippet.
+4. Update demo-facing install snippets and displayed dependency versions, especially `syntaxmp-demo/src/commonMain/kotlin/com/gallatinapps/syntaxmp/demo/panes/GetStartedSamples.kt`.
+5. Search for stale snapshot or previous-version references in Gradle files, docs, README content, demo resources, and demo Kotlin samples.
+6. Verify both published coordinates are still configured for the same version: `com.gallatinapps.syntaxmp:syntaxmp` and `com.gallatinapps.syntaxmp:syntaxmp-tokenizer`.
+7. Run the full web/demo validation pass from the Testing section, plus `git diff --check`, before handing off the release prep.
+
 ## Adding a New Language
 
 1. Pick a lowercase, hyphenless folder name under `builtins/`, matching the `commonTest/.../builtins/fixtures/<lang>/` fixture directory.

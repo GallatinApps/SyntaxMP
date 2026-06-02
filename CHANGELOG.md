@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-02
+
+### Added
+
+- Added `com.gallatinapps.syntaxmp:syntaxmp-tokenizer` as the publishable pure Kotlin tokenizer artifact for token-only and bring-your-own-renderer consumers.
+
+### Changed
+
+- **Breaking:** Kept `com.gallatinapps.syntaxmp:syntaxmp` as the Compose highlighter artifact and split the pure tokenizer layer into `syntaxmp-tokenizer`, with `syntaxmp` api-depending on it.
+- **Breaking:** Flattened tokenizer packages out of the old `engine.*` namespace and renamed built-in language packages from `languages.*` to `builtins.*`.
+- **Breaking:** Renamed the public tokenizer/language API cluster: `SyntaxTokenizerEngine` -> `SyntaxTokenizer`, `SyntaxTokenizer` -> `LanguageTokenizer`, `SyntaxTokenizeRequest` -> `TokenizeRequest`, `SyntaxLanguageId` -> `LanguageId`, and `SyntaxLanguageExtension` -> `LanguageExtension`.
+- **Breaking:** Removed `SyntaxTokenizeResult`; language tokenizers now return `List<SyntaxTokenSpan>` directly.
+- Updated the demo, benchmark harness, docs, and public API references for the split module and renamed APIs.
+
 ## [0.1.0] - 2026-05-30
 
 ### Added
@@ -15,5 +29,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Compose helpers for display text, editable text, custom languages, and syntax themes.
 - Hosted Kotlin/Wasm demo.
 
-[Unreleased]: https://github.com/GallatinApps/SyntaxMP/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/GallatinApps/SyntaxMP/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/GallatinApps/SyntaxMP/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/GallatinApps/SyntaxMP/releases/tag/v0.1.0

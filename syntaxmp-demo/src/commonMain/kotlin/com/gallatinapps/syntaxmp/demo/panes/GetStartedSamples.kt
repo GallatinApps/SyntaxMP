@@ -2,7 +2,7 @@ package com.gallatinapps.syntaxmp.demo.panes
 
 internal val InstallationCatalogSample = """
 [versions]
-syntaxmp = "0.2.0-SNAPSHOT"
+syntaxmp = "0.2.0"
 
 [libraries]
 syntaxmp = { module = "com.gallatinapps.syntaxmp:syntaxmp", version.ref = "syntaxmp" }
