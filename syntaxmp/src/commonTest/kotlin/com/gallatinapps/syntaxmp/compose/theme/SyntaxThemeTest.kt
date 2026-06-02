@@ -3,9 +3,9 @@ package com.gallatinapps.syntaxmp.compose.theme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
-import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.role.SyntaxRole
+import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -63,7 +63,7 @@ class SyntaxThemeTest {
                 exactRole to SyntaxStyle(fontStyle = FontStyle.Italic),
             ),
             languageOverrides = mapOf(
-                SyntaxLanguageId.Kotlin to SyntaxRoleStyles(
+                LanguageId.Kotlin to SyntaxRoleStyles(
                     SyntaxRole.Keyword to SyntaxStyle(color = Color.Red),
                     SyntaxRole.Keyword.Control to SyntaxStyle(
                         color = Color.Unspecified,
@@ -79,7 +79,7 @@ class SyntaxThemeTest {
                 fontWeight = FontWeight.Medium,
                 fontStyle = FontStyle.Italic,
             ),
-            theme.resolveStyle(exactRole, SyntaxLanguageId.Kotlin),
+            theme.resolveStyle(exactRole, LanguageId.Kotlin),
         )
         assertEquals(
             SyntaxStyle(
@@ -87,9 +87,9 @@ class SyntaxThemeTest {
                 fontWeight = FontWeight.Bold,
                 fontStyle = FontStyle.Italic,
             ),
-            theme.resolveStyle(exactRole, SyntaxLanguageId.Swift),
+            theme.resolveStyle(exactRole, LanguageId.Swift),
         )
-        assertEquals(SyntaxStyle(), theme.resolveStyle(SyntaxRole.String, SyntaxLanguageId.Kotlin))
+        assertEquals(SyntaxStyle(), theme.resolveStyle(SyntaxRole.String, LanguageId.Kotlin))
     }
 
     @Test
@@ -99,7 +99,7 @@ class SyntaxThemeTest {
                 SyntaxRole.Keyword to SyntaxStyle(color = Color.Blue),
             ),
             languageOverrides = mapOf(
-                SyntaxLanguageId.Kotlin to SyntaxRoleStyles(
+                LanguageId.Kotlin to SyntaxRoleStyles(
                     SyntaxRole.Keyword to SyntaxStyle(color = Color.Red),
                 ),
             ),
@@ -108,13 +108,13 @@ class SyntaxThemeTest {
         assertEquals(
             Color.Red,
             theme.resolveSpanStyle(
-                SyntaxTokenSpan(0, 3, SyntaxRole.Keyword, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 3, SyntaxRole.Keyword, LanguageId.Kotlin),
             ).color,
         )
         assertEquals(
             Color.Blue,
             theme.resolveSpanStyle(
-                SyntaxTokenSpan(0, 3, SyntaxRole.Keyword, SyntaxLanguageId.Swift),
+                SyntaxTokenSpan(0, 3, SyntaxRole.Keyword, LanguageId.Swift),
             ).color,
         )
     }
@@ -129,7 +129,7 @@ class SyntaxThemeTest {
                 SyntaxRole.Keyword to keyword,
             ),
             languageOverrides = mapOf(
-                SyntaxLanguageId.Kotlin to SyntaxRoleStyles(
+                LanguageId.Kotlin to SyntaxRoleStyles(
                     SyntaxRole.String to string,
                 ),
             ),
@@ -137,18 +137,18 @@ class SyntaxThemeTest {
 
         val updated = base
             .withRoleStyle(SyntaxRole.Number, number)
-            .withLanguageRoleStyle(SyntaxLanguageId.Kotlin, SyntaxRole.Keyword, keyword)
-            .withLanguageRoleStyles(SyntaxLanguageId.Swift, SyntaxRoleStyles(SyntaxRole.String to number))
+            .withLanguageRoleStyle(LanguageId.Kotlin, SyntaxRole.Keyword, keyword)
+            .withLanguageRoleStyles(LanguageId.Swift, SyntaxRoleStyles(SyntaxRole.String to number))
 
         assertEquals(keyword, updated.roleStyles[SyntaxRole.Keyword])
         assertEquals(number, updated.roleStyles[SyntaxRole.Number])
-        assertEquals(string, updated.languageOverrides[SyntaxLanguageId.Kotlin]?.get(SyntaxRole.String))
-        assertEquals(keyword, updated.languageOverrides[SyntaxLanguageId.Kotlin]?.get(SyntaxRole.Keyword))
-        assertEquals(number, updated.languageOverrides[SyntaxLanguageId.Swift]?.get(SyntaxRole.String))
+        assertEquals(string, updated.languageOverrides[LanguageId.Kotlin]?.get(SyntaxRole.String))
+        assertEquals(keyword, updated.languageOverrides[LanguageId.Kotlin]?.get(SyntaxRole.Keyword))
+        assertEquals(number, updated.languageOverrides[LanguageId.Swift]?.get(SyntaxRole.String))
 
-        val removed = updated.withLanguageRoleStyles(SyntaxLanguageId.Kotlin, null)
+        val removed = updated.withLanguageRoleStyles(LanguageId.Kotlin, null)
 
-        assertFalse(SyntaxLanguageId.Kotlin in removed.languageOverrides)
+        assertFalse(LanguageId.Kotlin in removed.languageOverrides)
         assertEquals(updated.roleStyles, removed.roleStyles)
     }
 
@@ -167,15 +167,15 @@ class SyntaxThemeTest {
         assertEquals(starterRootRoles, light.roleStyles.keys)
         assertEquals(starterRootRoles, dark.roleStyles.keys)
         assertEquals(Color(0xFFA16207), light.resolveStyle(SyntaxRole.Annotation).color)
-        assertEquals(Color(0xFF6D28D9), light.resolveStyle(SyntaxRole.Type, SyntaxLanguageId.Kotlin).color)
-        assertEquals(Color(0xFFFACC15), dark.resolveStyle(SyntaxRole.Annotation, SyntaxLanguageId.Kotlin).color)
+        assertEquals(Color(0xFF6D28D9), light.resolveStyle(SyntaxRole.Type, LanguageId.Kotlin).color)
+        assertEquals(Color(0xFFFACC15), dark.resolveStyle(SyntaxRole.Annotation, LanguageId.Kotlin).color)
         assertEquals(
             light.resolveStyle(SyntaxRole.Markup),
-            light.resolveStyle(SyntaxRole.Markup.append("heading").append("h1"), SyntaxLanguageId.Markdown),
+            light.resolveStyle(SyntaxRole.Markup.append("heading").append("h1"), LanguageId.Markdown),
         )
         assertEquals(
             dark.resolveStyle(SyntaxRole.Variable),
-            dark.resolveStyle(SyntaxRole.Variable.Parameter, SyntaxLanguageId.Kotlin),
+            dark.resolveStyle(SyntaxRole.Variable.Parameter, LanguageId.Kotlin),
         )
 
         listOf(light.roleStyles, dark.roleStyles).forEach { styles ->

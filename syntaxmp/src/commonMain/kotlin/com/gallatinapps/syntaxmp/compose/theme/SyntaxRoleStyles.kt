@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.compose.theme
 
-import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
+import com.gallatinapps.syntaxmp.role.SyntaxRole
 
 /** Sparse foreground style map keyed by syntax role. */
 public typealias SyntaxRoleStyles = Map<SyntaxRole, SyntaxStyle>

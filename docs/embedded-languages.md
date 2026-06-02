@@ -44,7 +44,7 @@ When `lang` is present, the value is routed through the same engine resolver as 
 |---|---|
 | Tagged template literals (`` html`...` ``, `` gql`...` ``, `` css`...` ``) | Reliable detection needs more than lexical context: call-site type info is what tells you which tag triggers which embedded language. SyntaxMP renders these as ordinary template strings with interpolation. |
 | HTML attribute scripts and styles (`onclick="..."`, `style="..."`) | Attribute-value embedded-language routing requires attribute-aware lexical plumbing the markup scanner does not carry. Attribute values stay string-like. |
-| Template languages embedded in HTML (ERB, Jinja, PHP-in-HTML, Twig, Mustache, ...) | Each one is its own scanning problem and out of SyntaxMP's current scope. Tokenize the file with the template language alone (for example, `SyntaxLanguageId.Php`) where one exists, or with `SyntaxLanguageId.Html` for plain markup pieces. |
+| Template languages embedded in HTML (ERB, Jinja, PHP-in-HTML, Twig, Mustache, ...) | Each one is its own scanning problem and out of SyntaxMP's current scope. Tokenize the file with the template language alone (for example, `LanguageId.Php`) where one exists, or with `LanguageId.Html` for plain markup pieces. |
 | PostgreSQL `LANGUAGE`-aware function bodies | Dollar-quoted strings (`$$ ... $$`, `$tag$ ... $tag$`) are recognized as `String`, but the body is not re-tokenized as the declared `LANGUAGE`. That needs statement-level parser context. |
 | General shell heredocs outside Dockerfile RUN | Most heredocs do not carry a reliable embedded-language hint, and inferring one from the delimiter is error-prone. Bodies stay as `String`. |
 | Makefile recipe lines as shell | Recipe lines mix Make variable expansion and shell syntax; treating them as plain text is closer to reality than partial routing. |
@@ -54,14 +54,14 @@ If one of these is a deal-breaker for your use case, the usual move is a dedicat
 
 ## What this means for theme authors
 
-An embedded span carries the embedded language's roles and its embedded `languageId: SyntaxLanguageId` field. The roles are not rewritten as the host language's roles, and `SyntaxTokenSpan.languageId` reflects which tokenizer actually produced the span, not which top-level call kicked off tokenization.
+An embedded span carries the embedded language's roles and its embedded `languageId: LanguageId` field. The roles are not rewritten as the host language's roles, and `SyntaxTokenSpan.languageId` reflects which tokenizer actually produced the span, not which top-level call kicked off tokenization.
 
 The practical consequence: per-language theme overrides apply to the routed embedded language, not the host. An HTML page that embeds CSS will pick up your CSS language override automatically:
 
 ```kotlin
 val theme = SyntaxTheme.DefaultDark
     .withLanguageRoleStyles(
-        languageId = SyntaxLanguageId.Css,
+        languageId = LanguageId.Css,
         styles = SyntaxRoleStyles(
             SyntaxRole.Property to SyntaxStyle(color = Color(0xFFFF79C6)),
         ),
@@ -79,17 +79,17 @@ BasicText(
 // the top-level language is HTML.
 ```
 
-The same is true the other direction: theming `SyntaxLanguageId.Html` does not affect the CSS or JS spans inside `<style>` and `<script>`, because their `SyntaxTokenSpan.languageId` is `Css` or `JavaScript`, not `Html`.
+The same is true the other direction: theming `LanguageId.Html` does not affect the CSS or JS spans inside `<style>` and `<script>`, because their `SyntaxTokenSpan.languageId` is `Css` or `JavaScript`, not `Html`.
 
 ## What this means for tokenizer extensions
 
 Built-in hosts route their child labels through the same engine lookup as top-level labels: registered extension ids first, then extension `aliases`, then built-in aliases and ids.
 
-- **Markdown fences route through the engine's extension lookup.** The fence label is matched against your registered extensions first (by exact language id or by `aliases`) before falling back to built-in aliases. An extension registered for `SyntaxLanguageId.fromString("myql")` is picked up automatically by a `myql` fence inside a Markdown document; if the same extension declares `aliases = setOf("mql")`, an `mql` fence routes to it too. No host code changes are needed.
+- **Markdown fences route through the engine's extension lookup.** The fence label is matched against your registered extensions first (by exact language id or by `aliases`) before falling back to built-in aliases. An extension registered for `LanguageId.fromString("myql")` is picked up automatically by a `myql` fence inside a Markdown document; if the same extension declares `aliases = setOf("mql")`, an `mql` fence routes to it too. No host code changes are needed.
 
 - **Markup raw-text `lang=` values use the same lookup.** A `<script lang="myjs">` or `<style lang="mycss">` value can route to an extension that declares `aliases = setOf("myjs")` or `aliases = setOf("mycss")`. Unknown explicit labels produce no embedded spans, so register an extension when a custom label should highlight.
 
-- **Extensions can replace a routed built-in embedded language's tokenizer everywhere.** Extension lookup runs ahead of built-ins at every routing layer, not just at the top level. An extension whose `languageId` is `SyntaxLanguageId.Css` handles the body of every `<style>` block in HTML, JSX, and TSX, and a `SyntaxLanguageId.JavaScript` extension handles every `<script>` body. Same for `css` and `js` Markdown fences.
+- **Extensions can replace a routed built-in embedded language's tokenizer everywhere.** Extension lookup runs ahead of built-ins at every routing layer, not just at the top level. An extension whose `languageId` is `LanguageId.Css` handles the body of every `<style>` block in HTML, JSX, and TSX, and a `LanguageId.JavaScript` extension handles every `<script>` body. Same for `css` and `js` Markdown fences.
 
 - **Extension tokenizers can embed another language.** When your own tokenizer finds a child region, call `request.tokenizeEmbedded(childCode, childLabel)`. The returned spans are relative to `childCode`, so offset them before returning them with the host spans:
 

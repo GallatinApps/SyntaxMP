@@ -1,16 +1,15 @@
 package com.gallatinapps.syntaxmp.benchmarks
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageExtension
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
-import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeRequest
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizeResult
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.language.LanguageExtension
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.role.SyntaxRole
+import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
+import com.gallatinapps.syntaxmp.tokenizer.TokenizeRequest
+import com.gallatinapps.syntaxmp.tokenizer.LanguageTokenizer
+import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer
 
 internal object TokenizationBenchmarks {
-    private val defaultEngine = SyntaxTokenizerEngine()
+    private val defaultEngine = SyntaxTokenizer()
 
     fun diagnosticCases(): List<BenchmarkCase> =
         publicTokenizationCases() +
@@ -41,60 +40,60 @@ internal object TokenizationBenchmarks {
     }
 
     private fun embeddedRoutingCases(): List<BenchmarkCase> {
-        val noEmbeddedId = SyntaxLanguageId.fromString("bench-embedded-none")
-        val oneLargeParentId = SyntaxLanguageId.fromString("bench-embedded-one-large-parent")
-        val manySmallParentId = SyntaxLanguageId.fromString("bench-embedded-many-small-parent")
-        val depthParentId = SyntaxLanguageId.fromString("bench-embedded-depth-parent")
-        val childId = SyntaxLanguageId.fromString("bench-embedded-child")
-        val grandchildId = SyntaxLanguageId.fromString("bench-embedded-grandchild")
-        val greatGrandchildId = SyntaxLanguageId.fromString("bench-embedded-great-grandchild")
-        val overDepthId = SyntaxLanguageId.fromString("bench-embedded-over-depth")
-        val leafId = SyntaxLanguageId.fromString("bench-embedded-leaf")
-        val disabledParentId = SyntaxLanguageId.fromString("bench-embedded-disabled-parent")
-        val unknownParentId = SyntaxLanguageId.fromString("bench-embedded-unknown-parent")
+        val noEmbeddedId = LanguageId.fromString("bench-embedded-none")
+        val oneLargeParentId = LanguageId.fromString("bench-embedded-one-large-parent")
+        val manySmallParentId = LanguageId.fromString("bench-embedded-many-small-parent")
+        val depthParentId = LanguageId.fromString("bench-embedded-depth-parent")
+        val childId = LanguageId.fromString("bench-embedded-child")
+        val grandchildId = LanguageId.fromString("bench-embedded-grandchild")
+        val greatGrandchildId = LanguageId.fromString("bench-embedded-great-grandchild")
+        val overDepthId = LanguageId.fromString("bench-embedded-over-depth")
+        val leafId = LanguageId.fromString("bench-embedded-leaf")
+        val disabledParentId = LanguageId.fromString("bench-embedded-disabled-parent")
+        val unknownParentId = LanguageId.fromString("bench-embedded-unknown-parent")
 
         val embeddedCode = repeatedToAtLeast(
             seed = "region alpha beta gamma delta epsilon zeta eta theta\n",
             targetChars = BenchmarkTargetSize.MediumEditorFile.targetChars,
         )
         val extensions = listOf(
-            SyntaxLanguageExtension(noEmbeddedId, tokenizer = localSpanTokenizer()),
-            SyntaxLanguageExtension(
+            LanguageExtension(noEmbeddedId, tokenizer = localSpanTokenizer()),
+            LanguageExtension(
                 languageId = oneLargeParentId,
                 tokenizer = embeddedTokenizer(childLabel = leafId.value, mode = EmbeddedMode.OneLarge),
             ),
-            SyntaxLanguageExtension(
+            LanguageExtension(
                 languageId = manySmallParentId,
                 tokenizer = embeddedTokenizer(childLabel = leafId.value, mode = EmbeddedMode.ManySmall),
             ),
-            SyntaxLanguageExtension(
+            LanguageExtension(
                 languageId = depthParentId,
                 tokenizer = embeddedTokenizer(childLabel = childId.value, mode = EmbeddedMode.OneLarge),
             ),
-            SyntaxLanguageExtension(
+            LanguageExtension(
                 languageId = childId,
                 tokenizer = embeddedTokenizer(childLabel = grandchildId.value, mode = EmbeddedMode.ManySmall),
             ),
-            SyntaxLanguageExtension(
+            LanguageExtension(
                 languageId = grandchildId,
                 tokenizer = embeddedTokenizer(childLabel = greatGrandchildId.value, mode = EmbeddedMode.OneLarge),
             ),
-            SyntaxLanguageExtension(
+            LanguageExtension(
                 languageId = greatGrandchildId,
                 tokenizer = embeddedTokenizer(childLabel = overDepthId.value, mode = EmbeddedMode.OneLarge),
             ),
-            SyntaxLanguageExtension(overDepthId, tokenizer = localSpanTokenizer()),
-            SyntaxLanguageExtension(leafId, tokenizer = localSpanTokenizer()),
-            SyntaxLanguageExtension(
+            LanguageExtension(overDepthId, tokenizer = localSpanTokenizer()),
+            LanguageExtension(leafId, tokenizer = localSpanTokenizer()),
+            LanguageExtension(
                 languageId = disabledParentId,
                 tokenizer = embeddedTokenizer(childLabel = "bench-disabled-child", mode = EmbeddedMode.OneLarge),
             ),
-            SyntaxLanguageExtension(
+            LanguageExtension(
                 languageId = unknownParentId,
                 tokenizer = embeddedTokenizer(childLabel = "definitely-unknown-language", mode = EmbeddedMode.OneLarge),
             ),
         )
-        val engine = SyntaxTokenizerEngine(extensions = extensions)
+        val engine = SyntaxTokenizer(extensions = extensions)
 
         return listOf(
             embeddedCase("no embedded regions", noEmbeddedId.value, embeddedCode, engine),
@@ -109,7 +108,7 @@ internal object TokenizationBenchmarks {
     private fun extensionLookupCases(): List<BenchmarkCase> =
         listOf(0, 5, 50).flatMap { extensionCount ->
             val extensions = numberedExtensions(extensionCount)
-            val engine = SyntaxTokenizerEngine(extensions = extensions)
+            val engine = SyntaxTokenizer(extensions = extensions)
             val exactLabel = if (extensionCount == 0) "kotlin" else "bench-extension-${extensionCount - 1}"
             val aliasLabel = if (extensionCount == 0) "kt" else "bench-alias-${extensionCount - 1}"
             val missLabel = "bench-extension-missing"
@@ -125,7 +124,7 @@ internal object TokenizationBenchmarks {
     private fun tokenizationCase(
         group: String,
         sample: SourceSample,
-        engine: SyntaxTokenizerEngine,
+        engine: SyntaxTokenizer,
     ): BenchmarkCase =
         BenchmarkCase(
             id = sample.caseId,
@@ -147,7 +146,7 @@ internal object TokenizationBenchmarks {
         name: String,
         languageLabel: String,
         code: String,
-        engine: SyntaxTokenizerEngine,
+        engine: SyntaxTokenizer,
     ): BenchmarkCase =
         BenchmarkCase(
             id = "diagnostics/embedded-routing/${stableIdSegment(name)}",
@@ -169,7 +168,7 @@ internal object TokenizationBenchmarks {
         extensionCount: Int,
         name: String,
         labels: List<String>,
-        engine: SyntaxTokenizerEngine,
+        engine: SyntaxTokenizer,
     ): BenchmarkCase {
         val lookupIterations = 10_000
         val inputChars = labels.sumOf { it.length } * lookupIterations
@@ -201,7 +200,7 @@ internal object TokenizationBenchmarks {
         extensionCount: Int,
         hitKind: String,
         label: String,
-        engine: SyntaxTokenizerEngine,
+        engine: SyntaxTokenizer,
     ): BenchmarkCase {
         val code = "val value = 42\n"
         return BenchmarkCase(
@@ -221,28 +220,26 @@ internal object TokenizationBenchmarks {
         }
     }
 
-    private fun numberedExtensions(count: Int): List<SyntaxLanguageExtension> =
+    private fun numberedExtensions(count: Int): List<LanguageExtension> =
         (0 until count).map { index ->
-            val languageId = SyntaxLanguageId.fromString("bench-extension-$index")
-            SyntaxLanguageExtension(
+            val languageId = LanguageId.fromString("bench-extension-$index")
+            LanguageExtension(
                 languageId = languageId,
                 aliases = setOf("bench-alias-$index"),
                 tokenizer = localSpanTokenizer(),
             )
         }
 
-    private fun localSpanTokenizer(): SyntaxTokenizer =
-        SyntaxTokenizer { request ->
-            SyntaxTokenizeResult(
-                spans = shortLineSpans(request.code, request.languageId),
-            )
+    private fun localSpanTokenizer(): LanguageTokenizer =
+        LanguageTokenizer { request ->
+            shortLineSpans(request.code, request.languageId)
         }
 
     private fun embeddedTokenizer(
         childLabel: String,
         mode: EmbeddedMode,
-    ): SyntaxTokenizer =
-        SyntaxTokenizer { request ->
+    ): LanguageTokenizer =
+        LanguageTokenizer { request ->
             val spans = mutableListOf<SyntaxTokenSpan>()
             embeddedRanges(request.code, mode).forEach { range ->
                 spans.add(
@@ -267,7 +264,7 @@ internal object TokenizationBenchmarks {
                     )
                 }
             }
-            SyntaxTokenizeResult(spans)
+            spans
         }
 
     private fun embeddedRanges(code: String, mode: EmbeddedMode): List<EmbeddedRange> =

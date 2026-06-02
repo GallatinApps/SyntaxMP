@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.remember
 import com.gallatinapps.syntaxmp.compose.rememberSyntaxAnnotatedString
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer
 import com.gallatinapps.syntaxmp.demo.components.DemoTextButton
 import com.gallatinapps.syntaxmp.demo.components.DemoThemeToggleButton
 import com.gallatinapps.syntaxmp.demo.model.DemoLanguage
@@ -47,7 +47,7 @@ internal fun SyntaxPreviewPane(
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
 ) {
-    val engine = remember { SyntaxTokenizerEngine() }
+    val engine = remember { SyntaxTokenizer() }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -138,7 +138,7 @@ private fun CodePreview(
     language: DemoLanguage,
     mode: DemoThemeMode,
     colors: DemoColorScheme,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
     modifier: Modifier = Modifier,
 ) {
     val verticalScrollState = rememberScrollState()

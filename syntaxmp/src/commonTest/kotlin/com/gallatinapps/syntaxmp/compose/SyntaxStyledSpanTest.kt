@@ -7,9 +7,9 @@ import androidx.compose.ui.text.font.FontWeight
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxRoleStyles
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxStyle
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
-import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.role.SyntaxRole
+import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -38,7 +38,7 @@ class SyntaxStyledSpanTest {
         val comment = SyntaxStyle(color = Color.Gray)
         val spans = buildSyntaxStyledSpans(
             code = code,
-            spans = listOf(SyntaxTokenSpan(0, code.length, SyntaxRole.Comment, SyntaxLanguageId.Kotlin)),
+            spans = listOf(SyntaxTokenSpan(0, code.length, SyntaxRole.Comment, LanguageId.Kotlin)),
             theme = SyntaxTheme(
                 roleStyles = SyntaxRoleStyles(
                     SyntaxRole.Comment to comment,
@@ -125,8 +125,8 @@ class SyntaxStyledSpanTest {
         val annotatedString = buildSyntaxAnnotatedString(
             code = code,
             spans = listOf(
-                SyntaxTokenSpan(0, 3, SyntaxRole.Keyword, SyntaxLanguageId.Kotlin),
-                SyntaxTokenSpan(13, 15, SyntaxRole.Number, SyntaxLanguageId.Kotlin),
+                SyntaxTokenSpan(0, 3, SyntaxRole.Keyword, LanguageId.Kotlin),
+                SyntaxTokenSpan(13, 15, SyntaxRole.Number, LanguageId.Kotlin),
             ),
             theme = theme,
         )

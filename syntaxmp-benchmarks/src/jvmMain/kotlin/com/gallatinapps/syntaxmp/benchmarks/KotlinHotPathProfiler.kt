@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.benchmarks
 
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -96,7 +96,7 @@ internal object KotlinHotPathProfiler {
         target: KotlinProfileTarget,
         reportDir: Path,
     ): KotlinProfileResult {
-        val engine = SyntaxTokenizerEngine()
+        val engine = SyntaxTokenizer()
         repeat(target.warmupIterations) {
             val spans = engine.tokenize(code = target.sample.code, languageLabel = target.sample.languageLabel)
             BenchmarkSink.consume(checksumTokenSpans(target.sample.code, spans))
@@ -309,35 +309,35 @@ private enum class ProfileCategory(
 ) {
     StringLiteralScanner(
         displayName = "String literal scanner",
-        matcher = { it.className.contains(".engine.primitives.strings.") },
+        matcher = { it.className.contains(".primitives.strings.") },
     ),
     CLikeScannerIdentifier(
         displayName = "CLikeScanner.scanIdentifier",
-        matcher = { it.className.endsWith(".engine.scanners.clike.CLikeScanner") && it.methodName == "scanIdentifier" },
+        matcher = { it.className.endsWith(".scanners.clike.CLikeScanner") && it.methodName == "scanIdentifier" },
     ),
     CLikeScannerOther(
         displayName = "CLike scanner other",
-        matcher = { it.className.endsWith(".engine.scanners.clike.CLikeScanner") && it.methodName != "scanIdentifier" },
+        matcher = { it.className.endsWith(".scanners.clike.CLikeScanner") && it.methodName != "scanIdentifier" },
     ),
     QualifiedNameScanning(
         displayName = "Qualified-name scanning",
-        matcher = { it.className.contains(".engine.primitives.QualifiedName") },
+        matcher = { it.className.contains(".primitives.QualifiedName") },
     ),
     SpanNormalization(
         displayName = "Span construction/normalization",
-        matcher = { it.className.contains(".engine.spans.") },
+        matcher = { it.className.contains(".spans.") },
     ),
     LanguageRouting(
         displayName = "Language label/routing",
         matcher = {
-            it.className.contains(".engine.tokenizer.SyntaxTokenizerEngine") ||
-                it.className.contains(".engine.routing.") ||
-                it.className.contains(".engine.language.")
+            it.className.contains(".tokenizer.SyntaxTokenizer") ||
+                it.className.contains(".routing.") ||
+                it.className.contains(".language.")
         },
     ),
     KotlinTokenizer(
         displayName = "Kotlin tokenizer wiring",
-        matcher = { it.className.contains(".languages.kotlin.") },
+        matcher = { it.className.contains(".builtins.kotlin.") },
     ),
     ;
 

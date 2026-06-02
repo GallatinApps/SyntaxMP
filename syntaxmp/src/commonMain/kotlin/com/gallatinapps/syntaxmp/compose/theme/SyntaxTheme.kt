@@ -2,10 +2,10 @@ package com.gallatinapps.syntaxmp.compose.theme
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
-import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.role.rolePathValuesFromRoot
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.role.SyntaxRole
+import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
+import com.gallatinapps.syntaxmp.role.rolePathValuesFromRoot
 
 /**
  * Syntax role styles for foreground text styling only.
@@ -15,12 +15,12 @@ import com.gallatinapps.syntaxmp.engine.role.rolePathValuesFromRoot
  */
 public data class SyntaxTheme(
     val roleStyles: SyntaxRoleStyles = SyntaxRoleStyles(),
-    val languageOverrides: Map<SyntaxLanguageId, SyntaxRoleStyles> = emptyMap(),
+    val languageOverrides: Map<LanguageId, SyntaxRoleStyles> = emptyMap(),
 ) {
     private val globalStylesByValue: Map<String, SyntaxStyle> =
         roleStyles.mapKeys { it.key.value }
 
-    private val languageStylesByValue: Map<SyntaxLanguageId, Map<String, SyntaxStyle>> =
+    private val languageStylesByValue: Map<LanguageId, Map<String, SyntaxStyle>> =
         languageOverrides.mapValues { (_, styles) ->
             styles.mapKeys { it.key.value }
     }
@@ -36,13 +36,13 @@ public data class SyntaxTheme(
     /** Resolves global plus [languageId] style cascade for [role]. */
     public fun resolveStyle(
         role: SyntaxRole,
-        languageId: SyntaxLanguageId,
+        languageId: LanguageId,
     ): SyntaxStyle =
         resolveStyleInternal(role = role, languageId = languageId)
 
     private fun resolveStyleInternal(
         role: SyntaxRole,
-        languageId: SyntaxLanguageId?,
+        languageId: LanguageId?,
     ): SyntaxStyle {
         val roleValues = rolePathValuesFromRoot(role.value)
         var resolved = SyntaxStyle()
@@ -120,7 +120,7 @@ public fun SyntaxTheme.withRoleStyle(
 
 /** Returns a copy with [languageId]'s entire role-style override replaced or removed. */
 public fun SyntaxTheme.withLanguageRoleStyles(
-    languageId: SyntaxLanguageId,
+    languageId: LanguageId,
     styles: SyntaxRoleStyles?,
 ): SyntaxTheme =
     copy(
@@ -133,7 +133,7 @@ public fun SyntaxTheme.withLanguageRoleStyles(
 
 /** Returns a copy with one [languageId]-specific [role] style replaced. */
 public fun SyntaxTheme.withLanguageRoleStyle(
-    languageId: SyntaxLanguageId,
+    languageId: LanguageId,
     role: SyntaxRole,
     style: SyntaxStyle,
 ): SyntaxTheme =

@@ -14,7 +14,7 @@ kotlin {
     explicitApi()
 
     android {
-        namespace = "com.gallatinapps.syntaxmp"
+        namespace = "com.gallatinapps.syntaxmp.compose"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
@@ -37,6 +37,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            api(project(":syntaxmp-tokenizer"))
             implementation(libs.compose.foundation)
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui)

@@ -93,4 +93,4 @@ SyntaxRole.Markup.append("diff.addition")   // markup.diff.addition
 
 ## Per-language role catalog
 
-For the exhaustive list of roles each built-in tokenizer emits, plus aliases, `SyntaxLanguageId` constants, and embedded-language routing, see [languages.md](languages.md).
+For the exhaustive list of roles each built-in tokenizer emits, plus aliases, `LanguageId` constants, and embedded-language routing, see [languages.md](languages.md).

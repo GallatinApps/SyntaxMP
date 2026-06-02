@@ -1,0 +1,19 @@
+package com.gallatinapps.syntaxmp.spans
+
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.role.SyntaxRole
+
+/**
+ * UTF-16 code-unit span emitted by a syntax tokenizer.
+ *
+ * @property start Inclusive start offset in the original code string.
+ * @property endExclusive Exclusive end offset in the original code string.
+ * @property role Styling role for this span.
+ * @property languageId Resolved language id that produced this span.
+ */
+public data class SyntaxTokenSpan(
+    val start: Int,
+    val endExclusive: Int,
+    val role: SyntaxRole,
+    val languageId: LanguageId,
+)

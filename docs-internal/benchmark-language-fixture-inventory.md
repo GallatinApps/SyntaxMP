@@ -8,7 +8,7 @@ matrix rows, and the demo sample it draws from.
 
 Current coverage:
 
-- `SyntaxLanguageId.BuiltIns` contains 39 built-in languages.
+- `LanguageId.BuiltIns` contains 39 built-in languages.
 - `syntaxmp-demo` contains 39 demo language samples.
 - The benchmark fixture matrix will contain 40 representative fixture rows because Markdown is
   split into plain Markdown and embedded-fence Markdown.

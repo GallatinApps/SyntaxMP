@@ -32,5 +32,6 @@ plugins {
 }
 
 include(":syntaxmp")
+include(":syntaxmp-tokenizer")
 include(":syntaxmp-demo")
 include(":syntaxmp-benchmarks")

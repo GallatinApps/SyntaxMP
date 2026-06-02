@@ -8,13 +8,13 @@ For a guided walk through the library rather than a per-symbol lookup, start wit
 
 - [At-a-glance](#at-a-glance)
 - [Engine](#engine)
-  - [`SyntaxTokenizerEngine`](#syntaxtokenizerengine)
   - [`SyntaxTokenizer`](#syntaxtokenizer)
-  - [`SyntaxTokenizeRequest`](#syntaxtokenizerequest)
-  - [`SyntaxTokenizeResult`](#syntaxtokenizeresult)
-  - [`SyntaxLanguageId`](#syntaxlanguageid)
-  - [`SyntaxLanguageExtension`](#syntaxlanguageextension)
+  - [`LanguageTokenizer`](#languagetokenizer)
+  - [`TokenizeRequest`](#tokenizerequest)
+  - [`LanguageId`](#languageid)
+  - [`LanguageExtension`](#languageextension)
   - [`SyntaxRole`](#syntaxrole)
+  - [`rolePathValuesFromRoot`](#rolepathvaluesfromroot)
   - [`SyntaxTokenSpan`](#syntaxtokenspan)
 - [Compose](#compose)
   - [`SyntaxStyledSpan`](#syntaxstyledspan)
@@ -40,7 +40,7 @@ For a guided walk through the library rather than a per-symbol lookup, start wit
 
 A typical render pipeline crosses all three layers:
 
-1. Construct a `SyntaxTokenizerEngine`.
+1. Construct a `SyntaxTokenizer`.
 2. Call `engine.tokenize(code = code, languageLabel = languageLabel)` to get back `List<SyntaxTokenSpan>`.
 3. Resolve each span's `SpanStyle` through a `SyntaxTheme`.
 4. Apply to a `BasicText` or `BasicTextField` via the Compose helpers.
@@ -51,41 +51,41 @@ A typical render pipeline crosses all three layers:
 
 ## Engine
 
-### `SyntaxTokenizerEngine`
+### `SyntaxTokenizer`
 
-Source: [SyntaxTokenizerEngine.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/tokenizer/SyntaxTokenizerEngine.kt)
+Source: [SyntaxTokenizer.kt](../syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/tokenizer/SyntaxTokenizer.kt)
 
 ```kotlin
-public class SyntaxTokenizerEngine(
-    builtInLanguages: Set<SyntaxLanguageId> = SyntaxLanguageId.BuiltIns,
-    extensions: List<SyntaxLanguageExtension> = emptyList(),
+public class SyntaxTokenizer(
+    builtInLanguages: Set<LanguageId> = LanguageId.BuiltIns,
+    extensions: List<LanguageExtension> = emptyList(),
 )
 ```
 
 **Purpose.** The tokenization entry point. Wraps the built-in routing table and any host-supplied extensions and turns `(code, languageLabel)` into a normalized list of token spans.
 
-**Description.** A `SyntaxTokenizerEngine` is the only stateful object SyntaxMP constructs at runtime. The state is the precomputed map of enabled built-in languages plus the normalized extensions. Once constructed it's immutable and safe to share across compositions and threads. Construct one per app or per editor surface; there is no benefit to building a fresh engine per call site.
+**Description.** A `SyntaxTokenizer` is the only stateful object SyntaxMP constructs at runtime. The state is the precomputed map of enabled built-in languages plus the normalized extensions. Once constructed it's immutable and safe to share across compositions and threads. Construct one per app or per editor surface; there is no benefit to building a fresh engine per call site.
 
-The engine is also the routing authority for embedded languages. When a tokenizer encounters embedded code (HTML script/style, Markdown fenced blocks, JSX/TSX script/style blocks, etc.) and calls `SyntaxTokenizeRequest.tokenizeEmbedded(...)`, the request goes back through this engine, applying the same extension lookup rules. Recursive embedded-language tokenization is capped at depth 3 to prevent pathological loops.
+The engine is also the routing authority for embedded languages. When a tokenizer encounters embedded code (HTML script/style, Markdown fenced blocks, JSX/TSX script/style blocks, etc.) and calls `TokenizeRequest.tokenizeEmbedded(...)`, the request goes back through this engine, applying the same extension lookup rules. Recursive embedded-language tokenization is capped at depth 3 to prevent pathological loops.
 
 **Constructor parameters**
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| `builtInLanguages` | `Set<SyntaxLanguageId>` | `SyntaxLanguageId.BuiltIns` | Subset of built-in languages enabled for this engine. Languages outside this set return empty spans even if a label resolves to them. Used to shrink the enabled-language surface. |
-| `extensions` | `List<SyntaxLanguageExtension>` | `emptyList()` | Host-supplied tokenizers. Extensions are checked in order before built-ins, so an extension covering `SyntaxLanguageId.Kotlin` overrides the built-in Kotlin tokenizer. |
+| `builtInLanguages` | `Set<LanguageId>` | `LanguageId.BuiltIns` | Subset of built-in languages enabled for this engine. Languages outside this set return empty spans even if a label resolves to them. Used to shrink the enabled-language surface. |
+| `extensions` | `List<LanguageExtension>` | `emptyList()` | Host-supplied tokenizers. Extensions are checked in order before built-ins, so an extension covering `LanguageId.Kotlin` overrides the built-in Kotlin tokenizer. |
 
 **Methods**
 
 **`resolveLanguageId(languageLabel)`**
 
 ```kotlin
-public fun resolveLanguageId(languageLabel: String?): SyntaxLanguageId?
+public fun resolveLanguageId(languageLabel: String?): LanguageId?
 ```
 
 Resolves a raw nullable label through this engine's extension and built-in policy: extension exact ids, extension aliases, built-in aliases/ids, then an exact custom id for unknown non-blank labels. Returns `null` if `languageLabel` is `null` or blank.
 
-Call this only when you need the canonical `SyntaxLanguageId` before tokenizing. For tokenization itself, pass the raw label directly to `tokenize(...)`.
+Call this only when you need the canonical `LanguageId` before tokenizing. For tokenization itself, pass the raw label directly to `tokenize(...)`.
 
 **`tokenize(code, languageLabel)`**
 
@@ -106,25 +106,25 @@ Returns `emptyList()` and never throws when:
 
 - The engine itself caches nothing across `tokenize` calls. Identical `(code, languageLabel)` pairs produce identical output but re-run the tokenizer each time. Hosts that need caching should `remember` on the Compose side or build a small LRU. See [building-an-editor.md](building-an-editor.md).
 
-**See also**: [`SyntaxTokenizer`](#syntaxtokenizer), [`SyntaxLanguageExtension`](#syntaxlanguageextension).
+**See also**: [`LanguageTokenizer`](#languagetokenizer), [`LanguageExtension`](#languageextension).
 
 ---
 
-### `SyntaxTokenizer`
+### `LanguageTokenizer`
 
-Source: [SyntaxTokenizer.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/tokenizer/SyntaxTokenizer.kt)
+Source: [LanguageTokenizer.kt](../syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/tokenizer/LanguageTokenizer.kt)
 
 ```kotlin
-public fun interface SyntaxTokenizer {
-    public fun tokenize(request: SyntaxTokenizeRequest): SyntaxTokenizeResult
+public fun interface LanguageTokenizer {
+    public fun tokenize(request: TokenizeRequest): List<SyntaxTokenSpan>
 }
 ```
 
 **Purpose.** The contract every tokenizer (built-in and extension) implements.
 
-**Description.** A `SyntaxTokenizer` is a pure function from [`SyntaxTokenizeRequest`](#syntaxtokenizerequest) to [`SyntaxTokenizeResult`](#syntaxtokenizeresult). Implementations should be stateless; the engine may invoke the same instance concurrently across multiple call sites. They may emit overlapping or out-of-order spans; span normalization in the engine sorts and resolves overlaps before the result reaches the caller.
+**Description.** A `LanguageTokenizer` is a pure function from [`TokenizeRequest`](#tokenizerequest) to `List<SyntaxTokenSpan>`. Implementations should be stateless; the engine may invoke the same instance concurrently across multiple call sites. They may emit overlapping or out-of-order spans; span normalization in the engine sorts and resolves overlaps before the result reaches the caller.
 
-The interface is declared as a `fun interface` so a tokenizer can be supplied as a lambda when convenient (`SyntaxTokenizer { request -> ... }`), or as an `object` for shared state.
+The interface is declared as a `fun interface` so a tokenizer can be supplied as a lambda when convenient (`LanguageTokenizer { request -> ... }`), or as an `object` for shared state.
 
 **Notes**
 
@@ -132,18 +132,18 @@ The interface is declared as a `fun interface` so a tokenizer can be supplied as
 - Throwing is allowed but produces an empty result for that call. Don't rely on it for signaling; prefer empty spans for "I don't know what this is." Implementations that want to observe or log their own failures should wrap their tokenizer body in `try/catch`.
 - Each emitted span must populate `languageId`, usually by passing through `request.languageId`.
 
-**See also**: [`SyntaxTokenizeRequest`](#syntaxtokenizerequest), [`SyntaxTokenizeResult`](#syntaxtokenizeresult), [`SyntaxLanguageExtension`](#syntaxlanguageextension), and [language-extension.md](language-extension.md) for a worked custom tokenizer.
+**See also**: [`TokenizeRequest`](#tokenizerequest), [`LanguageExtension`](#languageextension), and [language-extension.md](language-extension.md) for a worked custom tokenizer.
 
 ---
 
-### `SyntaxTokenizeRequest`
+### `TokenizeRequest`
 
-Source: [SyntaxTokenizeRequest.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/tokenizer/SyntaxTokenizeRequest.kt)
+Source: [TokenizeRequest.kt](../syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/tokenizer/TokenizeRequest.kt)
 
 ```kotlin
-public class SyntaxTokenizeRequest(
+public class TokenizeRequest(
     val code: String,
-    val languageId: SyntaxLanguageId,
+    val languageId: LanguageId,
 ) {
     public fun tokenizeEmbedded(
         code: String,
@@ -156,14 +156,14 @@ public class SyntaxTokenizeRequest(
 
 **Description.** The engine constructs a request per `tokenize` call. The `languageId` field is always the resolved canonical language id, not the raw label the caller passed in. Tokenizers can rely on it being one of the languages they claim to handle.
 
-The public constructor takes `code` and `languageId` only. Requests constructed this way are useful for direct unit tests of a tokenizer, but they are not bound to a `SyntaxTokenizerEngine`; `tokenizeEmbedded(...)` returns an empty list on manually constructed requests. Engine-created requests carry the internal routing function needed for embedded-language tokenization.
+The public constructor takes `code` and `languageId` only. Requests constructed this way are useful for direct unit tests of a tokenizer, but they are not bound to a `SyntaxTokenizer`; `tokenizeEmbedded(...)` returns an empty list on manually constructed requests. Engine-created requests carry the internal routing function needed for embedded-language tokenization.
 
 **Fields**
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `code` | `String` | Original code to tokenize. Tokenizers index offsets against this string. |
-| `languageId` | `SyntaxLanguageId` | Resolved language id. Non-null because the engine returns empty spans before constructing a request for an unresolvable language. |
+| `languageId` | `LanguageId` | Resolved language id. Non-null because the engine returns empty spans before constructing a request for an unresolvable language. |
 
 **Methods**
 
@@ -178,102 +178,76 @@ public fun tokenizeEmbedded(
 
 Routes a child code region through the same engine lookup as a top-level call. Returned spans are relative to the child `code`; tokenizers that merge them into a host result must offset them into the parent code range. Unknown, disabled, blank, or too-deep labels return an empty list. Returns an empty list on manually constructed requests.
 
----
+### `LanguageId`
 
-### `SyntaxTokenizeResult`
-
-Source: [SyntaxTokenizeResult.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/tokenizer/SyntaxTokenizeResult.kt)
-
-```kotlin
-public data class SyntaxTokenizeResult(
-    val spans: List<SyntaxTokenSpan> = emptyList(),
-)
-```
-
-**Purpose.** The raw tokenizer output, before engine normalization.
-
-**Description.** A thin wrapper around the produced span list. The wrapper exists so future tokenizer outputs (diagnostics or other tokenizer metadata) can be added without breaking the `SyntaxTokenizer` contract. As of now it carries spans only.
-
-The default `emptyList()` constructor is useful as a "no spans" return for tokenizers that bail early or hit unrecognized content.
-
-**Fields**
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `spans` | `List<SyntaxTokenSpan>` | Tokens produced by the tokenizer. May be overlapping or unsorted; the engine normalizes before returning to the caller. |
-
----
-
-### `SyntaxLanguageId`
-
-Source: [SyntaxLanguageId.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/language/SyntaxLanguageId.kt)
+Source: [LanguageId.kt](../syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/language/LanguageId.kt)
 
 ```kotlin
 @JvmInline
-public value class SyntaxLanguageId private constructor(public val value: String)
+public value class LanguageId private constructor(public val value: String)
 ```
 
 **Purpose.** Canonical language identifier. Used as the routing key throughout the engine and as a theme-override key in `SyntaxTheme.languageOverrides`.
 
 **Description.** A value class wrapping a normalized string id. Construction is deliberately private; callers go through two doors:
 
-1. **Built-in constants** on the companion (`SyntaxLanguageId.Kotlin`, etc.) when the language is known at compile time.
-2. **`SyntaxLanguageId.fromString(value)`** for exact custom language ids used by an extension. Does *not* honor aliases.
+1. **Built-in constants** on the companion (`LanguageId.Kotlin`, etc.) when the language is known at compile time.
+2. **`LanguageId.fromString(value)`** for exact custom language ids used by an extension. Does *not* honor aliases.
 
-For runtime raw labels (file extensions, Markdown fence info strings, user-config strings), use [`SyntaxTokenizerEngine.resolveLanguageId`](#syntaxtokenizerengine) when you need the canonical `SyntaxLanguageId` before tokenizing. It can see extension aliases as well as built-in aliases.
+For runtime raw labels (file extensions, Markdown fence info strings, user-config strings), use [`SyntaxTokenizer.resolveLanguageId`](#syntaxtokenizer) when you need the canonical `LanguageId` before tokenizing. It can see extension aliases as well as built-in aliases.
 
-The constructor normalizes by trimming whitespace and lowercasing. Equality is by the normalized `value` string, so `SyntaxLanguageId.fromString("PYTHON")` equals `SyntaxLanguageId.Python` after normalization.
+The constructor normalizes by trimming whitespace and lowercasing. Equality is by the normalized `value` string, so `LanguageId.fromString("PYTHON")` equals `LanguageId.Python` after normalization.
 
 **Fields**
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `value` | `String` | Normalized language id (trimmed, lowercased). Stable across SyntaxMP versions for built-ins, so it's safe to use as a persistence or wire key. |
+| `value` | `String` | Normalized language id (trimmed, lowercased). Use it for exact identity comparisons and language override keys. For persisted user or file choices, store the original raw label and resolve it again later. |
 
-**Built-in constants.** 39 languages live on `SyntaxLanguageId.Companion` as `public val Name: SyntaxLanguageId` entries (e.g. `SyntaxLanguageId.Kotlin`). For the full list, see [languages.md](languages.md) or [SyntaxLanguageId.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/language/SyntaxLanguageId.kt).
+**Built-in constants.** 39 languages live on `LanguageId.Companion` as `public val Name: LanguageId` entries (e.g. `LanguageId.Kotlin`). For the full list, see [languages.md](languages.md) or [LanguageId.kt](../syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/language/LanguageId.kt).
 
 **Companion members**
 
 **`BuiltIns`**
 
 ```kotlin
-public val BuiltIns: Set<SyntaxLanguageId>
+public val BuiltIns: Set<LanguageId>
 ```
 
-The full set of built-in languages, in registration order. Used as the default for `SyntaxTokenizerEngine.builtInLanguages`.
+The full set of built-in languages, in registration order. Used as the default for `SyntaxTokenizer.builtInLanguages`.
 
 **`fromString(value)`**
 
 ```kotlin
-public fun fromString(value: String): SyntaxLanguageId
+public fun fromString(value: String): LanguageId
 ```
 
-Constructs an exact language id, bypassing alias resolution. Throws `IllegalArgumentException` if `value` is blank after normalization. Used when a host knows exactly which custom id its extension uses (typical pattern: `val Myql = SyntaxLanguageId.fromString("myql")`).
+Constructs an exact language id, bypassing alias resolution. Throws `IllegalArgumentException` if `value` is blank after normalization. Used when a host knows exactly which custom id its extension uses (typical pattern: `val Myql = LanguageId.fromString("myql")`).
 
 **Notes**
 
-- `SyntaxLanguageId` is the type used for theme `languageOverrides` keys and for the `languageId` field on `SyntaxTokenSpan`. Hosts can `when` on `span.languageId` for per-language post-processing.
-- Built-in aliases include `js`, `ts`, `jsx`, `tsx`, `kt`, `kts`, `md`, `yml`, `pgsql`, `sqlite3`, `env`, `sh`, `bash`, `zsh`, and others. They are resolved by `SyntaxTokenizerEngine`; see the source for the authoritative list.
+- `LanguageId` is the type used for theme `languageOverrides` keys and for the `languageId` field on `SyntaxTokenSpan`. Hosts can `when` on `span.languageId` for per-language post-processing.
+- Built-in aliases include `js`, `ts`, `jsx`, `tsx`, `kt`, `kts`, `md`, `yml`, `pgsql`, `sqlite3`, `env`, `sh`, `bash`, `zsh`, and others. They are resolved by `SyntaxTokenizer`; see the source for the authoritative list.
 
-**See also**: [`SyntaxLanguageExtension`](#syntaxlanguageextension), [`SyntaxTokenSpan`](#syntaxtokenspan), [`SyntaxTheme`](#syntaxtheme).
+**See also**: [`LanguageExtension`](#languageextension), [`SyntaxTokenSpan`](#syntaxtokenspan), [`SyntaxTheme`](#syntaxtheme).
 
 ---
 
-### `SyntaxLanguageExtension`
+### `LanguageExtension`
 
-Source: [SyntaxLanguageExtension.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/language/SyntaxLanguageExtension.kt)
+Source: [LanguageExtension.kt](../syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/language/LanguageExtension.kt)
 
 ```kotlin
-public data class SyntaxLanguageExtension(
-    val languageId: SyntaxLanguageId,
+public data class LanguageExtension(
+    val languageId: LanguageId,
     val aliases: Set<String> = emptySet(),
-    val tokenizer: SyntaxTokenizer,
+    val tokenizer: LanguageTokenizer,
 )
 ```
 
 **Purpose.** The bundle a host registers with the engine to add or override a language tokenizer.
 
-**Description.** An extension binds a `SyntaxTokenizer` to one `SyntaxLanguageId` value. The engine resolves extensions before built-ins, so an extension whose `languageId` is `SyntaxLanguageId.Kotlin` overrides the built-in Kotlin tokenizer. Multiple extensions may be registered; resolution is first-match in the order they were passed to the engine.
+**Description.** An extension binds a `LanguageTokenizer` to one `LanguageId` value. The engine resolves extensions before built-ins, so an extension whose `languageId` is `LanguageId.Kotlin` overrides the built-in Kotlin tokenizer. Multiple extensions may be registered; resolution is first-match in the order they were passed to the engine.
 
 The optional `aliases` set adds host-defined labels that resolve to this extension's `languageId` at the engine boundary and when discovered inside source text. Typically Markdown fence labels (e.g. `mql` → `myql`) or markup raw-text `lang=` values.
 
@@ -281,23 +255,23 @@ The optional `aliases` set adds host-defined labels that resolve to this extensi
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `languageId` | `SyntaxLanguageId` | The language this extension handles. Used as the routing key. |
+| `languageId` | `LanguageId` | The language this extension handles. Used as the routing key. |
 | `aliases` | `Set<String>` | Labels that resolve to `languageId` when discovered inside source text (e.g. Markdown fence info, `<script lang="...">`, `<style lang="...">`). Defaults to empty. |
-| `tokenizer` | `SyntaxTokenizer` | The tokenizer that handles `languageId`. |
+| `tokenizer` | `LanguageTokenizer` | The tokenizer that handles `languageId`. |
 
 **Notes**
 
-- One language per extension. If one tokenizer handles multiple languages, register multiple `SyntaxLanguageExtension` entries that share the same tokenizer.
+- One language per extension. If one tokenizer handles multiple languages, register multiple `LanguageExtension` entries that share the same tokenizer.
 - `aliases` entries are trimmed and lowercased when checked at runtime, so case in the set doesn't matter.
-- An extension can override a built-in alias by declaring the same id. For instance, registering an extension with `SyntaxLanguageId.JavaScript` swaps out the built-in JS tokenizer entirely.
+- An extension can override a built-in alias by declaring the same id. For instance, registering an extension with `LanguageId.JavaScript` swaps out the built-in JS tokenizer entirely.
 
-**See also**: [`SyntaxTokenizer`](#syntaxtokenizer), [`SyntaxTokenizerEngine`](#syntaxtokenizerengine), and [language-extension.md](language-extension.md).
+**See also**: [`LanguageTokenizer`](#languagetokenizer), [`SyntaxTokenizer`](#syntaxtokenizer), and [language-extension.md](language-extension.md).
 
 ---
 
 ### `SyntaxRole`
 
-Source: [SyntaxRole.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/role/SyntaxRole.kt)
+Source: [SyntaxRole.kt](../syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/role/SyntaxRole.kt)
 
 ```kotlin
 public sealed class SyntaxRole protected constructor(public val value: String) {
@@ -384,26 +358,50 @@ Validated factory for arbitrary role strings. Trims and strips outer dots. Throw
 - The constants on the nested objects are themselves `SyntaxRole` instances, so `SyntaxRole.Keyword == SyntaxRole.of("keyword")` is `true`.
 - `equals`/`hashCode`/`toString` are all final and value-based on `value`. Two roles with the same string are the same role regardless of which path created them.
 
-**See also**: [`SyntaxTheme`](#syntaxtheme), [`SyntaxTokenSpan`](#syntaxtokenspan), [syntax-roles.md](syntax-roles.md), [languages.md](languages.md), [theming.md](theming.md).
+**See also**: [`rolePathValuesFromRoot`](#rolepathvaluesfromroot), [`SyntaxTheme`](#syntaxtheme), [`SyntaxTokenSpan`](#syntaxtokenspan), [syntax-roles.md](syntax-roles.md), [languages.md](languages.md), [theming.md](theming.md).
+
+---
+
+### `rolePathValuesFromRoot`
+
+Source: [SyntaxRole.kt](../syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/role/SyntaxRole.kt)
+
+```kotlin
+public fun rolePathValuesFromRoot(value: String): List<String>
+```
+
+**Purpose.** Returns the root-to-exact dotted role path values for a role string.
+
+**Description.** For `"constant.builtin.true"`, returns `["constant", "constant.builtin", "constant.builtin.true"]`. This is the string-level helper behind `SyntaxRole.rolesFromRoot()` and the theme parent-walk merge.
+
+**Parameters**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| `value` | `String` | Dotted role path value to expand. |
+
+**Returns** `List<String>`: parent role values ordered from root to exact.
+
+**See also**: [`SyntaxRole.rolesFromRoot`](#syntaxrole), [`SyntaxTheme`](#syntaxtheme).
 
 ---
 
 ### `SyntaxTokenSpan`
 
-Source: [SyntaxTokenSpan.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/engine/spans/SyntaxTokenSpan.kt)
+Source: [SyntaxTokenSpan.kt](../syntaxmp-tokenizer/src/commonMain/kotlin/com/gallatinapps/syntaxmp/spans/SyntaxTokenSpan.kt)
 
 ```kotlin
 public data class SyntaxTokenSpan(
     val start: Int,
     val endExclusive: Int,
     val role: SyntaxRole,
-    val languageId: SyntaxLanguageId,
+    val languageId: LanguageId,
 )
 ```
 
 **Purpose.** One emitted token. The unit of the engine's output.
 
-**Description.** A token span carries its position in the original code, its role, and the language id that produced it. The `languageId` field is important for embedded content: when a Markdown tokenizer routes a fenced JavaScript block through the engine, the returned spans carry `languageId = SyntaxLanguageId.JavaScript`, not `Markdown`. Theme language overrides key on this field, and host post-processing can `when` on it for language-specific work.
+**Description.** A token span carries its position in the original code, its role, and the language id that produced it. The `languageId` field is important for embedded content: when a Markdown tokenizer routes a fenced JavaScript block through the engine, the returned spans carry `languageId = LanguageId.JavaScript`, not `Markdown`. Theme language overrides key on this field, and host post-processing can `when` on it for language-specific work.
 
 **Fields**
 
@@ -412,14 +410,14 @@ public data class SyntaxTokenSpan(
 | `start` | `Int` | Inclusive UTF-16 start offset into the original code string. |
 | `endExclusive` | `Int` | Exclusive UTF-16 end offset. Always `> start` after normalization. |
 | `role` | `SyntaxRole` | The role to style. |
-| `languageId` | `SyntaxLanguageId` | The language id that produced this span. Equals `request.languageId` for top-level spans, or the embedded language for embedded spans. |
+| `languageId` | `LanguageId` | The language id that produced this span. Equals `request.languageId` for top-level spans, or the embedded language for embedded spans. |
 
 **Notes**
 
 - Offsets are UTF-16 code units. Slice the original code with `code.substring(span.start, span.endExclusive)`.
 - After engine normalization the span list is sorted by `start`, has no overlaps, and is clipped to `[0, code.length]`. Tokenizers can emit out-of-order, overlapping, or out-of-range spans; the engine sorts them out.
 
-**See also**: [`SyntaxRole`](#syntaxrole), [`SyntaxLanguageId`](#syntaxlanguageid), [span normalization](#span-normalization).
+**See also**: [`SyntaxRole`](#syntaxrole), [`LanguageId`](#languageid), [span normalization](#span-normalization).
 
 ---
 
@@ -580,7 +578,7 @@ Source: [SyntaxAnnotatedString.kt](../syntaxmp/src/commonMain/kotlin/com/gallati
 public fun rememberSyntaxAnnotatedString(
     code: String,
     languageLabel: String?,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
     theme: SyntaxTheme,
 ): AnnotatedString
 ```
@@ -602,7 +600,7 @@ If `languageLabel` is `null` or blank, returns a plain `AnnotatedString(code)` w
 | --- | --- | --- |
 | `code` | `String` | Text to tokenize and annotate. |
 | `languageLabel` | `String?` | Raw label resolved by `engine`. Built-in aliases and extension aliases work. `null` or blank skips tokenization. |
-| `engine` | `SyntaxTokenizerEngine` | Engine used for tokenization. Construct/hoist this however suits your scope (`remember`, host `CompositionLocal`, DI). |
+| `engine` | `SyntaxTokenizer` | Engine used for tokenization. Construct/hoist this however suits your scope (`remember`, host `CompositionLocal`, DI). |
 | `theme` | `SyntaxTheme` | Theme used to resolve role styles. Live changes restyle the cached spans without retokenizing. |
 
 **Returns** `AnnotatedString` ready to drop into a `BasicText` or any consumer of `AnnotatedString`.
@@ -612,7 +610,7 @@ If `languageLabel` is `null` or blank, returns a plain `AnnotatedString(code)` w
 - Engine scope is yours: the function takes the engine as a parameter and doesn't construct one for you. See [building-an-editor.md](building-an-editor.md) for host-owned engine-sharing patterns.
 - For editable surfaces, this isn't what you want: `BasicTextField` consumes spans through a `TextFieldBuffer` rather than an `AnnotatedString`. Use [`buildSyntaxStyledSpans`](#buildsyntaxstyledspans) + [`applySyntaxStyledSpans`](#textfieldbufferapplysyntaxstyledspans) instead.
 
-**See also**: [`buildSyntaxAnnotatedString`](#buildsyntaxannotatedstring), [`SyntaxTokenizerEngine`](#syntaxtokenizerengine).
+**See also**: [`buildSyntaxAnnotatedString`](#buildsyntaxannotatedstring), [`SyntaxTokenizer`](#syntaxtokenizer).
 
 ---
 
@@ -727,11 +725,11 @@ Source: [SyntaxTheme.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/synt
 ```kotlin
 public data class SyntaxTheme(
     val roleStyles: SyntaxRoleStyles = SyntaxRoleStyles(),
-    val languageOverrides: Map<SyntaxLanguageId, SyntaxRoleStyles> = emptyMap(),
+    val languageOverrides: Map<LanguageId, SyntaxRoleStyles> = emptyMap(),
 ) {
     public fun resolveSpanStyle(span: SyntaxTokenSpan): SpanStyle
     public fun resolveStyle(role: SyntaxRole): SyntaxStyle
-    public fun resolveStyle(role: SyntaxRole, languageId: SyntaxLanguageId): SyntaxStyle
+    public fun resolveStyle(role: SyntaxRole, languageId: LanguageId): SyntaxStyle
 
     public companion object {
         public val DefaultLight: SyntaxTheme
@@ -740,8 +738,8 @@ public data class SyntaxTheme(
 }
 
 public fun SyntaxTheme.withRoleStyle(role: SyntaxRole, style: SyntaxStyle): SyntaxTheme
-public fun SyntaxTheme.withLanguageRoleStyle(languageId: SyntaxLanguageId, role: SyntaxRole, style: SyntaxStyle): SyntaxTheme
-public fun SyntaxTheme.withLanguageRoleStyles(languageId: SyntaxLanguageId, styles: SyntaxRoleStyles?): SyntaxTheme
+public fun SyntaxTheme.withLanguageRoleStyle(languageId: LanguageId, role: SyntaxRole, style: SyntaxStyle): SyntaxTheme
+public fun SyntaxTheme.withLanguageRoleStyles(languageId: LanguageId, styles: SyntaxRoleStyles?): SyntaxTheme
 ```
 
 **Purpose.** The mapping from `(role, languageId)` to a Compose `SpanStyle`. The top-level theme value passed to Compose call sites.
@@ -760,7 +758,7 @@ The result is that themes can paint broad strokes globally (color every keyword 
 | Field | Type | Default | Description |
 | --- | --- | --- | --- |
 | `roleStyles` | `SyntaxRoleStyles` | `SyntaxRoleStyles()` (empty) | Global role-to-style map. Applied to every span. |
-| `languageOverrides` | `Map<SyntaxLanguageId, SyntaxRoleStyles>` | `emptyMap()` | Per-language refinements. Each entry's value is layered on top of `roleStyles` for spans matching that language. |
+| `languageOverrides` | `Map<LanguageId, SyntaxRoleStyles>` | `emptyMap()` | Per-language refinements. Each entry's value is layered on top of `roleStyles` for spans matching that language. |
 
 **Methods**
 
@@ -783,7 +781,7 @@ Returns the merged `SyntaxStyle` for a role, resolved against `roleStyles` only.
 **`resolveStyle(role, languageId)`**
 
 ```kotlin
-public fun resolveStyle(role: SyntaxRole, languageId: SyntaxLanguageId): SyntaxStyle
+public fun resolveStyle(role: SyntaxRole, languageId: LanguageId): SyntaxStyle
 ```
 
 Same as above, but also layers `languageOverrides[languageId]` on top of the global resolution.
@@ -815,7 +813,7 @@ Replace (or add) one entry in the global `roleStyles`. Preserves `languageOverri
 
 ```kotlin
 public fun SyntaxTheme.withLanguageRoleStyle(
-    languageId: SyntaxLanguageId,
+    languageId: LanguageId,
     role: SyntaxRole,
     style: SyntaxStyle,
 ): SyntaxTheme
@@ -827,7 +825,7 @@ Replace (or add) one entry inside `languageOverrides[languageId]`. Preserves all
 
 ```kotlin
 public fun SyntaxTheme.withLanguageRoleStyles(
-    languageId: SyntaxLanguageId,
+    languageId: LanguageId,
     styles: SyntaxRoleStyles?,
 ): SyntaxTheme
 ```
@@ -852,7 +850,7 @@ These behaviors hold across multiple symbols. They're documented once here so th
 
 ### Span normalization
 
-All output from `SyntaxTokenizerEngine.tokenize(...)` is normalized before being returned to the caller:
+All output from `SyntaxTokenizer.tokenize(...)` is normalized before being returned to the caller:
 
 - Sorted by `start` ascending.
 - Overlaps resolved deterministically: shortest span wins, then deepest dotted role, then earliest emission index.
@@ -878,12 +876,12 @@ The contract: `engine.tokenize(code = code, languageLabel = languageLabel)` alwa
 
 ### Embedded-language recursion
 
-When a tokenizer encounters embedded content (HTML script/style, Markdown fenced blocks, JSX/TSX script/style regions, or a custom extension's own child regions), it can route the inner content back through the engine with `SyntaxTokenizeRequest.tokenizeEmbedded(...)`, which re-applies extension lookup. Recursion is capped at depth 3. A document with deeper nesting renders the deepest layer as plain text rather than continuing to recurse.
+When a tokenizer encounters embedded content (HTML script/style, Markdown fenced blocks, JSX/TSX script/style regions, or a custom extension's own child regions), it can route the inner content back through the engine with `TokenizeRequest.tokenizeEmbedded(...)`, which re-applies extension lookup. Recursion is capped at depth 3. A document with deeper nesting renders the deepest layer as plain text rather than continuing to recurse.
 
 ### Role value stability and language labels
 
 The `value` string on each built-in `SyntaxRole` is intended to be stable. Hosts may persist or transmit role paths for theme keys, route segments, and role-based API payloads. Renaming a built-in role path is a breaking change.
 
-`SyntaxLanguageId.value` is the resolved identity the engine attaches to spans and the key used for language-specific theme overrides. It is not the recommended persisted source of truth for user-authored language labels or file-derived language choices.
+`LanguageId.value` is the resolved identity the engine attaches to spans and the key used for language-specific theme overrides. It is not the recommended persisted source of truth for user-authored language labels or file-derived language choices.
 
-If a host needs to save a language choice, persist the original label the user or file supplied (`bash`, `dotenv`, `xml`, etc.) and pass that label back to `SyntaxTokenizerEngine` at tokenization time. That keeps alias routing and future tokenizer routing changes in one place. Alias resolution is a routing policy, not a persistence contract; aliases are only alternate labels for the same public language identity.
+If a host needs to save a language choice, persist the original label the user or file supplied (`bash`, `dotenv`, `xml`, etc.) and pass that label back to `SyntaxTokenizer` at tokenization time. That keeps alias routing and future tokenizer routing changes in one place. Alias resolution is a routing policy, not a persistence contract; aliases are only alternate labels for the same public language identity.

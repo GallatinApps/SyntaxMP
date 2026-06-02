@@ -2,9 +2,23 @@
 
 SyntaxMP turns a `(code, languageLabel)` pair into a list of styled text spans you can drop into a Compose UI. Its scope is intentionally narrow: lexical syntax highlighting only. It does not parse, type-check, resolve symbols, run diagnostics, auto-detect languages, or render text. Those belong to the host application.
 
-This document explains the shape of the library: the pipeline a snippet travels through, where state lives, what runs on which platforms, and what scanner-based highlighting can and cannot do.
+This document explains the shape of the library: the modules it ships, the pipeline a snippet travels through, where state lives, what runs on which platforms, and what scanner-based highlighting can and cannot do.
 
 For a copy-paste-ready usage path, read the [README](../README.md) Quick Start first; this document is the "how it works" companion.
+
+## Modules and coordinates
+
+SyntaxMP publishes two coordinates with one dependency direction:
+
+```text
+com.gallatinapps.syntaxmp:syntaxmp
+  └─ api dependency on com.gallatinapps.syntaxmp:syntaxmp-tokenizer
+```
+
+- `syntaxmp` is the Compose highlighter, it owns `compose/` and `compose/theme/`, and re-exports tokenizer types used by its public signatures.
+- `syntaxmp-tokenizer` is the pure Kotlin tokenizer artifact for token-only or bring-your-own-renderer consumers. It owns `tokenizer/`, `language/`, `role/`, `spans/`, `routing/`, `primitives/`, `scanners/`, and `builtins/`.
+
+Stages 1-5 below live in `syntaxmp-tokenizer`. Stage 6 lives in `syntaxmp`.
 
 ## The pipeline
 
@@ -14,20 +28,20 @@ A call from a host application travels through six stages. Stages 1–5 are pure
 host: (code: String, languageLabel: String?)
   │
   ▼
-[1] Language resolution                     SyntaxTokenizerEngine.resolveLanguageId
+[1] Language resolution                     SyntaxTokenizer.resolveLanguageId
   │      └─ extensions → aliases → built-ins → exact custom id
   ▼
-[2] Engine routing                          SyntaxTokenizerEngine.tokenize
+[2] Engine routing                          SyntaxTokenizer.tokenize
   │      └─ resolveTokenizer()              extensions → built-ins
   ▼
-[3] Per-language tokenizer                  languages/<lang>/<Lang>Tokenizer
+[3] Per-language tokenizer                  builtins/<lang>/<Lang>Tokenizer
   │      └─ drives a scanner with vocabulary + options
   ▼
-[4] Scanner                                 engine/scanners/* or languages/<lang>/*Scanner
+[4] Scanner                                 scanners/* or builtins/<lang>/*Scanner
   │      └─ single-pass char state machine; may recurse into embedded languages
   │      → raw List<SyntaxTokenSpan> (possibly overlapping/out-of-order)
   ▼
-[5] Span normalization                      engine/spans/TokenSpanNormalizer
+[5] Span normalization                      spans/TokenSpanNormalizer
   │      → clean List<SyntaxTokenSpan>      (engine.tokenize boundary)
   │
   ▼
@@ -40,36 +54,36 @@ host: (code: String, languageLabel: String?)
 
 The engine takes a raw nullable language label. It normalizes the label, checks registered extension language ids and extension aliases first, then built-in aliases (`kt` -> `Kotlin`, `env` -> `Dotenv`, ...), then returns an exact custom language for unknown non-blank labels. Blank or null input returns `null`.
 
-Hosts that need the canonical `SyntaxLanguageId` before tokenizing can call `engine.resolveLanguageId(label)`. Otherwise, pass the same raw label directly to `engine.tokenize(code, label)`. SyntaxMP still does not auto-detect; it resolves only the label the host provides.
+Hosts that need the canonical `LanguageId` before tokenizing can call `engine.resolveLanguageId(label)`. Otherwise, pass the same raw label directly to `engine.tokenize(code, label)`. SyntaxMP still does not auto-detect; it resolves only the label the host provides.
 
-Aliases are only alternate labels for the same public language identity. When two formats currently share scanner mechanics but may need distinct behavior later, they keep separate `SyntaxLanguageId` values and tokenizer packages. For file metadata or user-facing language choices, store the original label you received and let the engine resolve it at tokenization time.
+Aliases are only alternate labels for the same public language identity. When two formats currently share scanner mechanics but may need distinct behavior later, they keep separate `LanguageId` values and tokenizer packages. For file metadata or user-facing language choices, store the original label you received and let the engine resolve it at tokenization time.
 
 ### Stage 2: Engine routing
 
-`SyntaxTokenizerEngine` is the only stateful, configured object a host constructs. At construction it takes:
+`SyntaxTokenizer` is the only stateful, configured object a host constructs. At construction it takes:
 
-- `builtInLanguages: Set<SyntaxLanguageId>`: built-ins enabled for this engine (default: `SyntaxLanguageId.BuiltIns`, all built-ins);
-- `extensions: List<SyntaxLanguageExtension>`: host-supplied tokenizers, checked before built-ins.
+- `builtInLanguages: Set<LanguageId>`: built-ins enabled for this engine (default: `LanguageId.BuiltIns`, all built-ins);
+- `extensions: List<LanguageExtension>`: host-supplied tokenizers, checked before built-ins.
 
 `tokenize(code, languageLabel)` is a pure function. It resolves the raw label, then calls `resolveTokenizer(languageId)`, which walks extensions first and then the built-in tokenizer map. Extensions can therefore override a built-in language. An unregistered, blank, or `null` label returns an empty span list; empty code does the same. Tokenizer throws degrade to zero spans so a buggy tokenizer cannot crash text rendering.
 
 ### Stage 3: Per-language tokenizer
 
-Each built-in language is an `internal object <Language>Tokenizer` under `languages/<lang>/`. The tokenizer receives a `SyntaxTokenizeRequest(code, languageId)` and returns a `SyntaxTokenizeResult(spans)`. Its job is to wire language-specific vocabulary (keywords, builtins, type names, directive sets, held in `<Language>Lexicon.kt`) and scanner options (literal forms, comment shapes, number rules) into the right scanner. Adding or tuning a language is usually editing a tokenizer plus a lexicon: the scanner mechanics stay the same.
+Each built-in language is an `internal object <Language>Tokenizer` under `builtins/<lang>/`. It implements `LanguageTokenizer`, receives a `TokenizeRequest(code, languageId)`, and returns a `List<SyntaxTokenSpan>`. Its job is to wire language-specific vocabulary (keywords, builtins, type names, directive sets, held in `<Language>Lexicon.kt`) and scanner options (literal forms, comment shapes, number rules) into the right scanner. Adding or tuning a language is usually editing a tokenizer plus a lexicon: the scanner mechanics stay the same.
 
-Host-supplied tokenizers implement `SyntaxTokenizer` directly. There is no internal contract they have to match. They receive the same `SyntaxTokenizeRequest` and produce the same `SyntaxTokenizeResult` shape.
+Host-supplied tokenizers implement `LanguageTokenizer` directly. There is no internal contract they have to match. They receive the same `TokenizeRequest` and return the same `List<SyntaxTokenSpan>` shape.
 
 ### Stage 4: Scanner
 
 A scanner is a hand-written `while (index < code.length)` loop. Each iteration looks at the current character (and a few characters of lookahead) and dispatches to a `scanX(start): Int` handler that emits zero or more `SyntaxTokenSpan` entries and returns the next index. There is no regex, no backtracking, and no grammar runtime. Scanners are forward lexical walks with deterministic behavior. Cost scales with code length, though language-specific constructs and embedded-language routing make some languages and source shapes heavier than others, so performance-sensitive hosts should measure their actual inputs.
 
-Two shared scanners back most languages: `CLikeScanner` (compiled brace languages with preprocessor, annotations, raw/triple/interpolated strings, C-style numbers) and `ScriptLikeScanner` (dynamic `#`-comment languages with regex literals, template strings, identifiers). Markup-family scanners are similarly shared: `engine/scanners/markup/` is the single home for HTML / XML / JSX / TSX. Vocabulary stays with the language package, not with the shared scanner.
+Two shared scanners back most languages: `CLikeScanner` (compiled brace languages with preprocessor, annotations, raw/triple/interpolated strings, C-style numbers) and `ScriptLikeScanner` (dynamic `#`-comment languages with regex literals, template strings, identifiers). Markup-family scanners are similarly shared: `scanners/markup/` is the single home for HTML / XML / JSX / TSX. Vocabulary stays with the language package, not with the shared scanner.
 
-Scanners may emit spans that overlap, sit out of order, or temporarily run past the end of the code. The normalizer cleans that up. They may also recurse into embedded languages (see [docs/embedded-languages.md](embedded-languages.md)) through the `SyntaxTokenizeRequest.tokenizeEmbedded(...)` affordance and scanner helpers that offset child spans into the host code. Routed child labels use the same engine resolver as top-level labels, and the engine caps recursion depth at three so a pathological host language cannot loop forever through embedded content.
+Scanners may emit spans that overlap, sit out of order, or temporarily run past the end of the code. The normalizer cleans that up. They may also recurse into embedded languages (see [docs/embedded-languages.md](embedded-languages.md)) through the `TokenizeRequest.tokenizeEmbedded(...)` affordance and scanner helpers that offset child spans into the host code. Routed child labels use the same engine resolver as top-level labels, and the engine caps recursion depth at three so a pathological host language cannot loop forever through embedded content.
 
 ### Stage 5: Span normalization
 
-`engine/spans/TokenSpanNormalizer` cleans up tokenizer output before it leaves the engine. It:
+`spans/TokenSpanNormalizer` cleans up tokenizer output before it leaves the engine. It:
 
 1. Clips every span to `[0, codeLength]` and drops empty ranges.
 2. Uses a fast path for already-sorted, non-overlapping spans, merging adjacent output segments
@@ -80,7 +94,7 @@ Scanners may emit spans that overlap, sit out of order, or temporarily run past 
 
 A `string.regex` inside a `string`, or an interpolation marker inside a multi-line string, therefore wins its sub-range without the scanner needing to know how to carve holes in the broader span.
 
-`SyntaxTokenizerEngine.tokenize(...)` returns the normalized `List<SyntaxTokenSpan>` directly; there is no wrapper type. Each span carries `start`, `endExclusive`, a `SyntaxRole`, and the resolved `SyntaxLanguageId` that produced it. The list is the engine output boundary. Stages 1 through 5 are plain Kotlin with no Compose dependency; stage 6 is where Compose types enter.
+`SyntaxTokenizer.tokenize(...)` returns the normalized `List<SyntaxTokenSpan>` directly; there is no wrapper type. Each span carries `start`, `endExclusive`, a `SyntaxRole`, and the resolved `LanguageId` that produced it. The list is the engine output boundary. Stages 1 through 5 are plain Kotlin with no Compose dependency; stage 6 is where Compose types enter.
 
 ### Stage 6: Theme resolution and Compose styling
 
@@ -96,7 +110,7 @@ The Compose layer exposes two output shapes:
 | Lifetime | What it holds | Owner |
 |---|---|---|
 | Per-call | The code string, the raw label, the resolved language id, the resulting spans. Pure inputs, pure outputs. | Caller's stack frame |
-| Per-engine | Enabled built-in set, normalized extensions, the precomputed tokenizer route map. Immutable after construction. | `SyntaxTokenizerEngine` instance, usually a single per-app value |
+| Per-engine | Enabled built-in set, normalized extensions, the precomputed tokenizer route map. Immutable after construction. | `SyntaxTokenizer` instance, usually a single per-app value |
 | Per-host | The active `SyntaxTheme`, the surrounding `TextStyle`, and any app-level engine provider. | Application (SyntaxMP ships no `CompositionLocal` for engine or theme values) |
 
 SyntaxMP has no internal cache. `engine.tokenize(...)` is a pure function of `(code, languageLabel)`, so any caching policy belongs to the host. A `remember(engine, code, languageLabel) { engine.tokenize(...) }` is usually enough for Compose call sites. See [docs/building-an-editor.md](building-an-editor.md) for engine sharing and caching.
@@ -109,7 +123,7 @@ and report interpretation.
 
 ## Cross-platform posture
 
-SyntaxMP targets **JVM**, **Android**, **iOS arm64**, **iOS simulator arm64**, and **web through Kotlin/Wasm**. All source lives in `commonMain`: there are no `expect`/`actual` declarations, no platform-specific source sets, and no JS or native bridges. Stages 1 through 5 are plain Kotlin standard-library code; stage 6 depends on Compose Multiplatform's text types and runs identically across all targets the host supports. The same scanner code produces the same spans on every target.
+SyntaxMP targets **JVM**, **Android**, **iOS arm64**, **iOS simulator arm64**, and **web through Kotlin/Wasm**. All library source lives in `commonMain`: there are no `expect`/`actual` declarations, no platform-specific source sets, and no JS or native bridges. Stages 1 through 5 are plain Kotlin standard-library code in `syntaxmp-tokenizer`; stage 6 depends on Compose Multiplatform's text types in `syntaxmp` and runs identically across all targets the host supports. The same scanner code produces the same spans on every target.
 
 ## Limitations
 
@@ -121,8 +135,8 @@ SyntaxMP targets **JVM**, **Android**, **iOS arm64**, **iOS simulator arm64**, a
 
 - [README Quick Start](../README.md#quick-start): the smallest possible usage path.
 - [docs/syntax-roles.md](syntax-roles.md): the roles primer (root and refinement constants, custom-role factories). Theme authors should start here.
-- [docs/languages.md](languages.md): the per-language catalog of roles each built-in tokenizer emits, plus aliases, `SyntaxLanguageId` constants, and embedded-language routing.
+- [docs/languages.md](languages.md): the per-language catalog of roles each built-in tokenizer emits, plus aliases, `LanguageId` constants, and embedded-language routing.
 - [docs/theming.md](theming.md): the theming reference. Role tree, resolution policy, language overrides, copy/override helpers.
-- [docs/language-extension.md](language-extension.md): adding a custom language via `SyntaxLanguageExtension`.
+- [docs/language-extension.md](language-extension.md): adding a custom language via `LanguageExtension`.
 - [docs/building-an-editor.md](building-an-editor.md): read-only vs. editable render paths, caching, and large-document guidance.
 - [docs/embedded-languages.md](embedded-languages.md): what the engine routes automatically for HTML, Markdown, JSX, and TSX, and what it deliberately doesn't.

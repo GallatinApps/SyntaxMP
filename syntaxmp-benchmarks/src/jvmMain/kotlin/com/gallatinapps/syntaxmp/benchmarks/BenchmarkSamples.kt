@@ -1,9 +1,9 @@
 package com.gallatinapps.syntaxmp.benchmarks
 
 import com.gallatinapps.syntaxmp.compose.SyntaxStyledSpan
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
-import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.role.SyntaxRole
+import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
 
 internal data class BenchmarkSamples(
     val nanos: List<Long>,
@@ -186,7 +186,7 @@ internal fun checksumStyledSpans(code: String, spans: List<SyntaxStyledSpan>): L
 internal fun syntheticCode(size: BenchmarkTargetSize): String =
     repeatedToAtLeast("alpha beta gamma delta epsilon zeta eta theta\n", size.targetChars)
 
-internal fun shortLineSpans(code: String, languageId: SyntaxLanguageId): List<SyntaxTokenSpan> =
+internal fun shortLineSpans(code: String, languageId: LanguageId): List<SyntaxTokenSpan> =
     buildList {
         var lineStart = 0
         code.splitToSequence('\n').forEach { line ->
@@ -208,7 +208,7 @@ internal fun shortLineSpans(code: String, languageId: SyntaxLanguageId): List<Sy
         }
     }
 
-internal fun oneLargeSpan(code: String, languageId: SyntaxLanguageId): List<SyntaxTokenSpan> =
+internal fun oneLargeSpan(code: String, languageId: LanguageId): List<SyntaxTokenSpan> =
     listOf(
         SyntaxTokenSpan(
             start = 0,

@@ -1,9 +1,9 @@
 package com.gallatinapps.syntaxmp.demo.model
 
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
+import com.gallatinapps.syntaxmp.language.LanguageId
 
 internal data class DemoLanguage(
-    val id: SyntaxLanguageId,
+    val id: LanguageId,
     val displayName: String,
     val routeSegment: String = id.value,
     val aliases: List<String> = emptyList(),

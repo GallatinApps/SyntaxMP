@@ -52,7 +52,7 @@ Compose's editable text APIs own the string content, so you can't hand them an `
 fun CodeField(
     state: TextFieldState,
     languageLabel: String?,
-    engine: SyntaxTokenizerEngine,
+    engine: SyntaxTokenizer,
     theme: SyntaxTheme,
 ) {
     BasicTextField(
@@ -81,24 +81,24 @@ lifecycle.
 
 ## Sharing the engine
 
-`SyntaxTokenizerEngine` is the only stateful object in SyntaxMP, and its state is the precomputed routing map for built-ins plus your normalized extensions. Once constructed it's immutable and safe to share across compositions and threads.
+`SyntaxTokenizer` is the only stateful object in SyntaxMP, and its state is the precomputed routing map for built-ins plus your normalized extensions. Once constructed it's immutable and safe to share across compositions and threads.
 
 SyntaxMP deliberately doesn't ship a Composable helper for engine construction or a `CompositionLocal` for engine threading. Engine scope is a host-app decision. Most Compose apps should create one engine for the app's syntax configuration and pass it through their own app wiring.
 
 **CompositionLocal.** A host-owned `staticCompositionLocalOf` is the straightforward Compose pattern when many surfaces need the same engine. Define the local in your app, construct the engine once near the root, and read it at call sites that need to tokenize:
 
 ```kotlin
-val LocalAppSyntaxEngine = staticCompositionLocalOf<SyntaxTokenizerEngine> {
+val LocalAppSyntaxEngine = staticCompositionLocalOf<SyntaxTokenizer> {
     error("LocalAppSyntaxEngine not provided")
 }
 
 @Composable
 fun AppSyntaxProvider(
-    extensions: List<SyntaxLanguageExtension> = emptyList(),
+    extensions: List<LanguageExtension> = emptyList(),
     content: @Composable () -> Unit,
 ) {
     val engine = remember(extensions) {
-        SyntaxTokenizerEngine(extensions = extensions)
+        SyntaxTokenizer(extensions = extensions)
     }
 
     CompositionLocalProvider(LocalAppSyntaxEngine provides engine) {
@@ -116,11 +116,11 @@ val engine = LocalAppSyntaxEngine.current
 
 ```kotlin
 val engine = remember(extensions) {
-    SyntaxTokenizerEngine(extensions = extensions)
+    SyntaxTokenizer(extensions = extensions)
 }
 ```
 
-**Dependency injection.** Apps that already use DI can create one `SyntaxTokenizerEngine` in that container and inject or pass it to Compose call sites. SyntaxMP APIs take the engine as a parameter, so no SyntaxMP-specific adapter is required.
+**Dependency injection.** Apps that already use DI can create one `SyntaxTokenizer` in that container and inject or pass it to Compose call sites. SyntaxMP APIs take the engine as a parameter, so no SyntaxMP-specific adapter is required.
 
 Engine construction precomputes routing. Build the engine once for the scope that owns your syntax configuration, then reuse it for tokenization. Do not construct a fresh engine inside `outputTransformation` or another per-keystroke path.
 
@@ -162,7 +162,7 @@ For read-only call sites, `rememberSyntaxAnnotatedString(...)` already remembers
 
 ## Where to go next
 
-- [docs/theming.md](theming.md): what to do with the spans `buildSyntaxStyledSpans` produces, and how the resolver turns `SyntaxRole` plus `SyntaxLanguageId` into a `SpanStyle`.
+- [docs/theming.md](theming.md): what to do with the spans `buildSyntaxStyledSpans` produces, and how the resolver turns `SyntaxRole` plus `LanguageId` into a `SpanStyle`.
 - [docs/embedded-languages.md](embedded-languages.md): what gets routed to which embedded language automatically inside HTML, Markdown, JSX, and TSX.
 - [docs/architecture.md](architecture.md): where the editable path sits in the broader pipeline.
 - [docs/language-extension.md](language-extension.md): adding a custom language whose spans will flow through everything above.

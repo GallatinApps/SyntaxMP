@@ -3,8 +3,8 @@ package com.gallatinapps.syntaxmp.demo.theme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
-import com.gallatinapps.syntaxmp.engine.language.SyntaxLanguageId
-import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.role.SyntaxRole
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -27,34 +27,34 @@ class DemoThemeTest {
     fun demoKotlinThemeOverridesDefaultStarterPalettes() {
         val light = DemoThemeMode.Light.syntaxTheme(DemoThemeMode.Light.colors)
         val dark = DemoThemeMode.Dark.syntaxTheme(DemoThemeMode.Dark.colors)
-        val kotlin = requireNotNull(dark.languageOverrides[SyntaxLanguageId.Kotlin])
+        val kotlin = requireNotNull(dark.languageOverrides[LanguageId.Kotlin])
 
         assertEquals(Color(0xFF649EEE), kotlin[SyntaxRole.Function]?.color)
-        assertEquals(Color(0xFF0F766E), light.resolveStyle(SyntaxRole.Function, SyntaxLanguageId.Kotlin).color)
+        assertEquals(Color(0xFF0F766E), light.resolveStyle(SyntaxRole.Function, LanguageId.Kotlin).color)
         assertEquals(Color(0xFFE1E8F0), DemoThemeMode.Dark.colors.textPrimary)
         assertEquals(DemoThemeMode.Dark.colors.textPrimary, kotlin[SyntaxRole.Type]?.color)
         assertEquals(DemoThemeMode.Dark.colors.textPrimary, kotlin[SyntaxRole.Variable.Parameter]?.color)
         assertEquals(
             DemoThemeMode.Dark.colors.textPrimary,
-            dark.resolveStyle(SyntaxRole.Type, SyntaxLanguageId.Kotlin).color,
+            dark.resolveStyle(SyntaxRole.Type, LanguageId.Kotlin).color,
         )
         assertEquals(
             DemoThemeMode.Dark.colors.textPrimary,
-            dark.resolveStyle(SyntaxRole.Variable.Parameter, SyntaxLanguageId.Kotlin).color,
+            dark.resolveStyle(SyntaxRole.Variable.Parameter, LanguageId.Kotlin).color,
         )
         assertEquals(
-            dark.resolveStyle(SyntaxRole.Function, SyntaxLanguageId.Kotlin),
-            dark.resolveStyle(SyntaxRole.Function.Declaration, SyntaxLanguageId.Kotlin),
+            dark.resolveStyle(SyntaxRole.Function, LanguageId.Kotlin),
+            dark.resolveStyle(SyntaxRole.Function.Declaration, LanguageId.Kotlin),
         )
         assertEquals(
-            dark.resolveStyle(SyntaxRole.Function, SyntaxLanguageId.Kotlin),
-            dark.resolveStyle(SyntaxRole.Function.Member, SyntaxLanguageId.Kotlin),
+            dark.resolveStyle(SyntaxRole.Function, LanguageId.Kotlin),
+            dark.resolveStyle(SyntaxRole.Function.Member, LanguageId.Kotlin),
         )
         assertEquals(
             dark.resolveStyle(SyntaxRole.Keyword),
-            dark.resolveStyle(SyntaxRole.Constant.Builtin.append("true"), SyntaxLanguageId.Kotlin),
+            dark.resolveStyle(SyntaxRole.Constant.Builtin.append("true"), LanguageId.Kotlin),
         )
-        assertEquals(dark.resolveStyle(SyntaxRole.Variable), dark.resolveStyle(SyntaxRole.Variable, SyntaxLanguageId.Kotlin))
+        assertEquals(dark.resolveStyle(SyntaxRole.Variable), dark.resolveStyle(SyntaxRole.Variable, LanguageId.Kotlin))
     }
 
     @Test
@@ -77,8 +77,8 @@ class DemoThemeTest {
     fun demoDiffThemeStylesAdditionsAndDeletionsWithoutChangingDefaults() {
         val light = DemoThemeMode.Light.syntaxTheme(DemoThemeMode.Light.colors)
         val dark = DemoThemeMode.Dark.syntaxTheme(DemoThemeMode.Dark.colors)
-        val lightDiff = requireNotNull(light.languageOverrides[SyntaxLanguageId.Diff])
-        val darkDiff = requireNotNull(dark.languageOverrides[SyntaxLanguageId.Diff])
+        val lightDiff = requireNotNull(light.languageOverrides[LanguageId.Diff])
+        val darkDiff = requireNotNull(dark.languageOverrides[LanguageId.Diff])
 
         assertEquals(Color(0xFF0969DA), lightDiff[DiffHeaderRole]?.color)
         assertEquals(FontWeight.SemiBold, lightDiff[DiffHeaderRole]?.fontWeight)
@@ -92,11 +92,11 @@ class DemoThemeTest {
         assertEquals(Color(0xFFFF757F), darkDiff[DiffDeletionRole]?.color)
         assertEquals(
             SyntaxTheme.DefaultLight.resolveStyle(SyntaxRole.Markup),
-            SyntaxTheme.DefaultLight.resolveStyle(DiffHeaderRole, SyntaxLanguageId.Diff),
+            SyntaxTheme.DefaultLight.resolveStyle(DiffHeaderRole, LanguageId.Diff),
         )
         assertEquals(
             SyntaxTheme.DefaultDark.resolveStyle(SyntaxRole.Markup),
-            SyntaxTheme.DefaultDark.resolveStyle(DiffDeletionRole, SyntaxLanguageId.Diff),
+            SyntaxTheme.DefaultDark.resolveStyle(DiffDeletionRole, LanguageId.Diff),
         )
     }
 

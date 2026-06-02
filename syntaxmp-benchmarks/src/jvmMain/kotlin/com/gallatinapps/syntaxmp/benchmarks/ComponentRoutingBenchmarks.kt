@@ -1,9 +1,9 @@
 package com.gallatinapps.syntaxmp.benchmarks
 
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizerEngine
+import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer
 
 internal object ComponentRoutingBenchmarks {
-    private val defaultEngine = SyntaxTokenizerEngine()
+    private val defaultEngine = SyntaxTokenizer()
 
     fun cases(): List<BenchmarkCase> {
         val samples = listOf(
