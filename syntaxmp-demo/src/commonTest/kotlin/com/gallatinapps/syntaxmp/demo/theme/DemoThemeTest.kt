@@ -3,8 +3,8 @@ package com.gallatinapps.syntaxmp.demo.theme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
-import com.gallatinapps.syntaxmp.engine.language.LanguageId
-import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.role.SyntaxRole
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

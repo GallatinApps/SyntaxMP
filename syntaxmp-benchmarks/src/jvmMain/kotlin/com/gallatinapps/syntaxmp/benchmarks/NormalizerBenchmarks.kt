@@ -1,11 +1,11 @@
 package com.gallatinapps.syntaxmp.benchmarks
 
-import com.gallatinapps.syntaxmp.engine.language.LanguageExtension
-import com.gallatinapps.syntaxmp.engine.language.LanguageId
-import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.LanguageTokenizer
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
+import com.gallatinapps.syntaxmp.language.LanguageExtension
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.role.SyntaxRole
+import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
+import com.gallatinapps.syntaxmp.tokenizer.LanguageTokenizer
+import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer
 
 internal object NormalizerBenchmarks {
     fun cases(): List<BenchmarkCase> {

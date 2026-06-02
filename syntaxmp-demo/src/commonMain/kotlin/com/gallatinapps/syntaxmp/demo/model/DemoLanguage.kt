@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.demo.model
 
-import com.gallatinapps.syntaxmp.engine.language.LanguageId
+import com.gallatinapps.syntaxmp.language.LanguageId
 
 internal data class DemoLanguage(
     val id: LanguageId,

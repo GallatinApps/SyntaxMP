@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.remember
 import com.gallatinapps.syntaxmp.compose.rememberSyntaxAnnotatedString
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
+import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer
 import com.gallatinapps.syntaxmp.demo.components.DemoTextButton
 import com.gallatinapps.syntaxmp.demo.components.DemoThemeToggleButton
 import com.gallatinapps.syntaxmp.demo.model.DemoLanguage

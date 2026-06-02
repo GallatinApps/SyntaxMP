@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.benchmarks
 
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
+import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer
 
 internal object KotlinTokenizationBenchmarks {
     private val defaultEngine = SyntaxTokenizer()

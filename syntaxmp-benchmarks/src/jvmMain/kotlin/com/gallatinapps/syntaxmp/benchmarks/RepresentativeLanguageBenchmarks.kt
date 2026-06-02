@@ -2,7 +2,7 @@ package com.gallatinapps.syntaxmp.benchmarks
 
 import com.gallatinapps.syntaxmp.benchmarks.fixtures.ExpandedLanguageBenchmarkFixture
 import com.gallatinapps.syntaxmp.benchmarks.fixtures.LanguageBenchmarkCatalog
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
+import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer
 
 internal object RepresentativeLanguageBenchmarks {
     private val defaultEngine = SyntaxTokenizer()

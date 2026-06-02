@@ -1,6 +1,6 @@
 package com.gallatinapps.syntaxmp.benchmarks.fixtures
 
-import com.gallatinapps.syntaxmp.engine.language.LanguageId
+import com.gallatinapps.syntaxmp.language.LanguageId
 import java.util.Locale
 
 internal object LanguageBenchmarkFixtureSelfCheck {

@@ -1,9 +1,9 @@
 package com.gallatinapps.syntaxmp.benchmarks
 
 import com.gallatinapps.syntaxmp.compose.SyntaxStyledSpan
-import com.gallatinapps.syntaxmp.engine.language.LanguageId
-import com.gallatinapps.syntaxmp.engine.role.SyntaxRole
-import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.role.SyntaxRole
+import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
 
 internal data class BenchmarkSamples(
     val nanos: List<Long>,

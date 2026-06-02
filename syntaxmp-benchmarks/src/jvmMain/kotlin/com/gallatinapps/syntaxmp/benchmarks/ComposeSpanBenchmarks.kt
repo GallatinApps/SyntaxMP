@@ -6,9 +6,9 @@ import com.gallatinapps.syntaxmp.compose.applySyntaxStyledSpans
 import com.gallatinapps.syntaxmp.compose.buildSyntaxAnnotatedString
 import com.gallatinapps.syntaxmp.compose.buildSyntaxStyledSpans
 import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
-import com.gallatinapps.syntaxmp.engine.language.LanguageId
-import com.gallatinapps.syntaxmp.engine.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.engine.tokenizer.SyntaxTokenizer
+import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
+import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer
 
 internal object ComposeSpanBenchmarks {
     private val engine = SyntaxTokenizer()

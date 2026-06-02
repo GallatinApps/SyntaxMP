@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.demo.model
 
 import com.gallatinapps.syntaxmp.demo.model.samples.*
-import com.gallatinapps.syntaxmp.engine.language.LanguageId
+import com.gallatinapps.syntaxmp.language.LanguageId
 
 internal object DemoLanguageCatalog {
     val DefaultDemoLanguageId: LanguageId = LanguageId.Kotlin
