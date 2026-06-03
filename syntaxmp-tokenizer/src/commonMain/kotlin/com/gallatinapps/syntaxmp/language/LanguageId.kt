@@ -143,11 +143,6 @@ public value class LanguageId private constructor(
             PowerShell,
         )
 
-        internal fun resolve(label: String?): LanguageId? {
-            val normalized = label.normalizeLanguageValue() ?: return null
-            return resolveBuiltInLanguageLabel(normalized) ?: fromString(normalized)
-        }
-
         /**
          * Creates an exact custom language id without alias resolution.
          *
@@ -155,13 +150,13 @@ public value class LanguageId private constructor(
          */
         public fun fromString(value: String): LanguageId =
             LanguageId(
-                value.normalizeLanguageValue()
+                value.trimAndLowercaseOrNull()
                     ?: throw IllegalArgumentException("Syntax language id must not be blank."),
             )
     }
 }
 
-internal fun String?.normalizeLanguageValue(): String? =
+internal fun String?.trimAndLowercaseOrNull(): String? =
     this
         ?.trim()
         ?.lowercase()

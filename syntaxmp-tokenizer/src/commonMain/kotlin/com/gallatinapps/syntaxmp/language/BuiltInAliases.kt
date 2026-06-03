@@ -1,7 +1,7 @@
 package com.gallatinapps.syntaxmp.language
 
 // Keep this map grouped by target LanguageId in LanguageId.value alphabetical order.
-// Include only non-canonical aliases here; canonical id labels come from BuiltInIdsByLabel.
+// Include only non-canonical aliases here; canonical id labels come from LanguageId.value.
 // Languages without aliases are omitted.
 private val BuiltInAliasesByLanguage: Map<LanguageId, Set<String>> = mapOf(
     LanguageId.C to setOf("h"),
@@ -28,22 +28,6 @@ private val BuiltInAliasesByLanguage: Map<LanguageId, Set<String>> = mapOf(
     LanguageId.TypeScript to setOf("ts"),
     LanguageId.Yaml to setOf("yml"),
 )
-
-private val BuiltInAliases: Map<String, LanguageId> =
-    BuiltInAliasesByLanguage
-        .flatMap { (languageId, aliases) ->
-            aliases.map { alias -> alias to languageId }
-        }
-        .toMap()
-
-private val BuiltInIdsByLabel: Map<String, LanguageId> =
-    LanguageId.BuiltIns.associateBy { it.value }
-
-internal fun resolveBuiltInLanguageLabel(label: String): LanguageId? {
-    val normalized = label.normalizeLanguageValue() ?: return null
-    return BuiltInAliases[normalized]
-        ?: BuiltInIdsByLabel[normalized]
-}
 
 internal fun builtInLanguageLabelsFor(languageId: LanguageId): Set<String> {
     if (languageId !in LanguageId.BuiltIns) return emptySet()
