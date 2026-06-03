@@ -29,7 +29,7 @@ host: (code: String, languageLabel: String?)
   │
   ▼
 [1] Language resolution                     SyntaxTokenizer.resolveLanguageId
-  │      └─ extensions → aliases → built-ins → exact custom id
+  │      └─ active extension labels + enabled built-in labels
   ▼
 [2] Engine routing                          SyntaxTokenizer.tokenize
   │      └─ resolveTokenizer()              extensions → built-ins
@@ -52,7 +52,7 @@ host: (code: String, languageLabel: String?)
 
 ### Stage 1: Language resolution
 
-The engine takes a raw nullable language label. It normalizes the label, checks registered extension language ids and extension aliases first, then built-in aliases (`kt` -> `Kotlin`, `env` -> `Dotenv`, ...), then returns an exact custom language for unknown non-blank labels. Blank or null input returns `null`.
+The engine takes a raw nullable language label. It trims and lowercases the label, then checks the active label catalog for this tokenizer instance: extension language id values, extension aliases, enabled built-in ids, and enabled built-in aliases (`kt` -> `Kotlin`, `env` -> `Dotenv`, ...). Blank, null, unknown, or disabled labels return `null`.
 
 Hosts that need the canonical `LanguageId` before tokenizing can call `engine.resolveLanguageId(label)`. Otherwise, pass the same raw label directly to `engine.tokenize(code, label)`. SyntaxMP still does not auto-detect; it resolves only the label the host provides.
 
@@ -65,7 +65,9 @@ Aliases are only alternate labels for the same public language identity. When tw
 - `builtInLanguages: Set<LanguageId>`: built-ins enabled for this engine (default: `LanguageId.BuiltIns`, all built-ins);
 - `extensions: List<LanguageExtension>`: host-supplied tokenizers, checked before built-ins.
 
-`tokenize(code, languageLabel)` is a pure function. It resolves the raw label, then calls `resolveTokenizer(languageId)`, which walks extensions first and then the built-in tokenizer map. Extensions can therefore override a built-in language. An unregistered, blank, or `null` label returns an empty span list; empty code does the same. Tokenizer throws degrade to zero spans so a buggy tokenizer cannot crash text rendering.
+`builtInLanguages` is a built-in registration filter: disabling a built-in removes its id label, aliases, and tokenizer implementation from this engine. Custom language ids belong in `LanguageExtension`, not in `builtInLanguages`.
+
+`tokenize(code, languageLabel)` is a pure function. It resolves the raw label, then calls `resolveTokenizer(languageId)`, which walks extensions first and then the built-in tokenizer map. Extensions can therefore override a built-in language. An unregistered, disabled, blank, or `null` label returns an empty span list; empty code does the same. Tokenizer throws degrade to zero spans so a buggy tokenizer cannot crash text rendering.
 
 ### Stage 3: Per-language tokenizer
 
@@ -110,7 +112,7 @@ The Compose layer exposes two output shapes:
 | Lifetime | What it holds | Owner |
 |---|---|---|
 | Per-call | The code string, the raw label, the resolved language id, the resulting spans. Pure inputs, pure outputs. | Caller's stack frame |
-| Per-engine | Enabled built-in set, normalized extensions, the precomputed tokenizer route map. Immutable after construction. | `SyntaxTokenizer` instance, usually a single per-app value |
+| Per-engine | Enabled built-in set, host extensions, precomputed active label map, and tokenizer route map. Immutable after construction. | `SyntaxTokenizer` instance, usually a single per-app value |
 | Per-host | The active `SyntaxTheme`, the surrounding `TextStyle`, and any app-level engine provider. | Application (SyntaxMP ships no `CompositionLocal` for engine or theme values) |
 
 SyntaxMP has no internal cache. `engine.tokenize(...)` is a pure function of `(code, languageLabel)`, so any caching policy belongs to the host. A `remember(engine, code, languageLabel) { engine.tokenize(...) }` is usually enough for Compose call sites. See [docs/building-an-editor.md](building-an-editor.md) for engine sharing and caching.

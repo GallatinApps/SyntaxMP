@@ -12,7 +12,7 @@ Embedded-language routing is engine-owned. Built-in hosts call back through the 
 | HTML | `<style>` body | CSS | Omitted `lang` routes to CSS. Explicit `lang` values route through the engine resolver, so extension aliases can route custom languages. Unknown explicit `lang` values produce no embedded highlighting; register an extension to handle them. |
 | JSX | `<script>` / `<style>` bodies (same rules as HTML) | JS / CSS | Expression islands (`{ ... }`) route as JavaScript. |
 | TSX | `<script>` / `<style>` bodies (same rules as HTML) | JS / CSS | Expression islands route as TypeScript. |
-| Markdown | Fenced code body | Fence label's resolved language | Fence labels are matched against registered extensions first (by language id or `aliases`), then resolved through built-in aliases such as `ts` for TypeScript. |
+| Markdown | Fenced code body | Fence label's resolved language | Fence labels route through the engine's active label catalog, including extension labels and enabled built-in aliases such as `ts` for TypeScript. |
 | Markdown | HTML blocks | HTML | |
 | Dockerfile | `RUN <<EOF`, `RUN sh <<EOF`, and `RUN bash <<EOF` heredoc bodies | Shell / Bash | Generic non-RUN heredocs stay as `String`. |
 
@@ -36,7 +36,7 @@ The built-in resolver looks at the tag name and the optional `lang` attribute:
 
 If `lang` is omitted, the default for the tag wins: `<script>` routes as JavaScript and `<style>` routes as CSS.
 
-When `lang` is present, the value is routed through the same engine resolver as top-level labels and Markdown fences. Built-in aliases, exact extension ids, and extension aliases all work. Unknown explicit labels are not errors, but they produce no embedded spans. A known built-in label whose tokenizer is disabled for the engine also produces no embedded spans.
+When `lang` is present, the value is routed through the same engine resolver as top-level labels and Markdown fences. Enabled built-in aliases, extension id values, and extension aliases all work. Unknown explicit labels are not errors, but they produce no embedded spans. A known built-in label whose tokenizer is disabled for the engine also produces no embedded spans unless an extension explicitly claims that label.
 
 ## What's deliberately not supported
 
@@ -83,15 +83,15 @@ The same is true the other direction: theming `LanguageId.Html` does not affect 
 
 ## What this means for tokenizer extensions
 
-Built-in hosts route their child labels through the same engine lookup as top-level labels: registered extension ids first, then extension `aliases`, then built-in aliases and ids.
+Built-in hosts route their child labels through the same active label catalog as top-level calls: extension id values, extension `aliases`, enabled built-in ids, and enabled built-in aliases.
 
-- **Markdown fences route through the engine's extension lookup.** The fence label is matched against your registered extensions first (by exact language id or by `aliases`) before falling back to built-in aliases. An extension registered for `LanguageId.fromString("myql")` is picked up automatically by a `myql` fence inside a Markdown document; if the same extension declares `aliases = setOf("mql")`, an `mql` fence routes to it too. No host code changes are needed.
+- **Markdown fences route through the engine's active label catalog.** An extension registered for `LanguageId.fromString("myql")` is picked up automatically by a `myql` fence inside a Markdown document; if the same extension declares `aliases = setOf("mql")`, an `mql` fence routes to it too. No host code changes are needed.
 
 - **Markup raw-text `lang=` values use the same lookup.** A `<script lang="myjs">` or `<style lang="mycss">` value can route to an extension that declares `aliases = setOf("myjs")` or `aliases = setOf("mycss")`. Unknown explicit labels produce no embedded spans, so register an extension when a custom label should highlight.
 
 - **Extensions can replace a routed built-in embedded language's tokenizer everywhere.** Extension lookup runs ahead of built-ins at every routing layer, not just at the top level. An extension whose `languageId` is `LanguageId.Css` handles the body of every `<style>` block in HTML, JSX, and TSX, and a `LanguageId.JavaScript` extension handles every `<script>` body. Same for `css` and `js` Markdown fences.
 
-- **Extension tokenizers can embed another language.** When your own tokenizer finds a child region, call `request.tokenizeEmbedded(childCode, childLabel)`. The returned spans are relative to `childCode`, so offset them before returning them with the host spans:
+- **Extension tokenizers can embed another language.** When your own tokenizer finds a child region, call `request.tokenizeEmbedded(childCode, childLabel)`. Unknown, disabled, or blank child labels return empty spans. Returned spans are relative to `childCode`, so offset them before returning them with the host spans:
 
 ```kotlin
 val childSpans = request.tokenizeEmbedded(childCode, childLabel).map { span ->

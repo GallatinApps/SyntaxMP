@@ -229,13 +229,11 @@ val TinyTemplateTokenizer = LanguageTokenizer { request ->
 }
 ```
 
-The embedded call uses the engine's normal language lookup: extensions first, then built-ins. If JavaScript is disabled for that engine, or if the child label is unknown, the call returns an empty list.
+The embedded call uses the engine's active label catalog, the same as top-level tokenization. If JavaScript is disabled for that engine, or if the child label is unknown, the call returns an empty list.
 
 ## Registering aliases
 
-`LanguageExtension.aliases` is for labels that should resolve to the extension's `languageId`.
-They work at the top-level engine boundary and in routed embedded-language labels such as Markdown fence
-info strings and markup raw-text `lang=` values.
+The extension's `languageId.value` is always a recognized label for the tokenizer instance, even when `aliases` is empty. `LanguageExtension.aliases` is for additional labels that should resolve to the same `languageId`. They work at the top-level engine boundary and in routed embedded-language labels such as Markdown fence info strings and markup raw-text `lang=` values.
 
 In the example above, registering `"mql"` means a Markdown fence opened with ` ```mql ` will route its body through the `myql` tokenizer:
 
@@ -245,7 +243,7 @@ select * from users where id = @@current_user;
 ```
 ```
 
-Top-level raw labels can be passed directly to `engine.tokenize(...)`. Use `engine.resolveLanguageId(label)` only when you need the canonical `LanguageId` before tokenizing, such as for diagnostics or a language-specific UI affordance.
+Top-level raw labels can be passed directly to `engine.tokenize(...)`. Use `engine.resolveLanguageId(label)` only when you need the canonical `LanguageId` before tokenizing, such as for diagnostics or a language-specific UI affordance. Unknown, blank, or disabled labels resolve to `null`.
 
 The same alias also works when a built-in host already exposes a raw-label route. For example,
 `<script lang="mql">...</script>` or `<style lang="mql">...</style>` can route through the extension
@@ -269,6 +267,40 @@ val engine = SyntaxTokenizer(
 ```
 
 Useful when you need a domain-specific dialect or want to test an experimental tokenizer against the rest of your app without forking the library.
+
+`builtInLanguages` controls built-in registrations: the built-in id, tokenizer implementation, and built-in aliases. If the built-in language remains enabled, an extension override inherits those active built-in labels:
+
+```kotlin
+val engine = SyntaxTokenizer(
+    extensions = listOf(
+        LanguageExtension(
+            languageId = LanguageId.Kotlin,
+            tokenizer = MyCustomKotlinTokenizer,
+        ),
+    ),
+)
+
+engine.resolveLanguageId("kt") // LanguageId.Kotlin
+```
+
+If the built-in language is disabled, only the extension's id value and explicit aliases are active:
+
+```kotlin
+val engine = SyntaxTokenizer(
+    builtInLanguages = LanguageId.BuiltIns - LanguageId.Kotlin,
+    extensions = listOf(
+        LanguageExtension(
+            languageId = LanguageId.Kotlin,
+            aliases = setOf("kt"),
+            tokenizer = MyCustomKotlinTokenizer,
+        ),
+    ),
+)
+
+engine.resolveLanguageId("kotlin") // LanguageId.Kotlin
+engine.resolveLanguageId("kt")     // LanguageId.Kotlin
+engine.resolveLanguageId("kts")    // null
+```
 
 ## Theming a custom language
 

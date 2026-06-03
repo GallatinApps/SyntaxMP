@@ -41,14 +41,14 @@ Purpose-built lexical tokenizers, role-based theming, and drop-in Compose text h
 - **Pure Kotlin / KMP-clean.** Common code only. No platform shims, no JS bridge, no native parsers, no regex grammars.
 - **Predictable token model.** Each token has one dotted `SyntaxRole` value (`keyword`, `keyword.control`, `variable.parameter`, ...), plus the non-null `LanguageId` that produced it. Themes match roles with progressive parent fallback.
 - **Small, opinionated theme surface.** A `SyntaxStyle` is just color + weight + style. Host `TextStyle` owns font family, size, line height, base color, and backgrounds.
-- **No global state, no auto-detection.** You pass a raw language label such as `"kotlin"` or `"kt"`; the engine resolves built-in aliases and extension aliases. The engine is a pure function of `(code, languageLabel)`. Easy to test, safe to share.
+- **No global state, no auto-detection.** You pass a raw language label such as `"kotlin"` or `"kt"`; the engine resolves labels active for that tokenizer instance. The engine is a pure function of `(code, languageLabel)`. Easy to test, safe to share.
 - **Primitives, not wrappers.** You compose `rememberSyntaxAnnotatedString` + `BasicText` for read-only views, or `buildSyntaxStyledSpans` + `applySyntaxStyledSpans` for `BasicTextField` editors. Engine and theme scoping is the host's choice.
 
 ---
 
 ## Supported languages
 
-39 built-in languages, all driven by shared scanners, scanner options, and explicit vocabulary inputs. Pass a language label such as a built-in id or any true alias for the same public language identity (`js`, `ts`, `env`, `bash`, `zsh`, `kts`, `pgsql`, `sqlite3`, ...).
+39 built-in languages, all driven by shared scanners, scanner options, and explicit vocabulary inputs. With the default engine, pass a language label such as a built-in id or any true alias for the same public language identity (`js`, `ts`, `env`, `bash`, `zsh`, `kts`, `pgsql`, `sqlite3`, ...).
 
 <table>
   <tr>
@@ -234,7 +234,7 @@ See [docs/theming.md](docs/theming.md) for the full role tree, resolution policy
 
 ## Choosing a language subset
 
-By default the engine enables all 39 built-ins. Shrink the surface (smaller construction cost, fewer code paths reachable) by passing a `Set<LanguageId>`:
+By default the engine enables all 39 built-ins. Pass a `Set<LanguageId>` when a host wants to restrict which built-in registrations are active:
 
 ```kotlin
 val enabledLanguages = setOf(
@@ -246,7 +246,7 @@ val enabledLanguages = setOf(
 val engine = SyntaxTokenizer(builtInLanguages = enabledLanguages)
 ```
 
-Labels resolving to a disabled language return `emptyList()`. The engine never throws "unknown language."
+`builtInLanguages` controls built-in registrations: the built-in id label, aliases, and tokenizer implementation. Labels for disabled built-ins are absent from `engine.languageLabels` and return `emptyList()` unless an extension explicitly claims the label. The engine never throws "unknown language."
 
 ---
 

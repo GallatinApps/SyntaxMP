@@ -101,14 +101,14 @@ SyntaxMP source packages are split by module. The `engine/` umbrella is gone; th
 
 ```text
 :syntaxmp-tokenizer
-├── language/    # LanguageId, LanguageExtension, label normalization
+├── language/    # LanguageId, LanguageExtension, built-in aliases, label cleanup
 ├── role/        # SyntaxRole and role-path helpers
 ├── tokenizer/   # SyntaxTokenizer, LanguageTokenizer, TokenizeRequest
 ├── spans/       # SyntaxTokenSpan, span normalization, and embedded-span helpers
 ├── primitives/  # low-level reusable scanner building blocks
 │   ├── strings/ # string, raw string, heredoc, interpolation, format, and prefix rules
 │   └── numbers/ # numeric literal scanners and modes
-├── routing/     # internal built-in/extension tokenizer routing
+├── routing/     # internal built-in tokenizer registry
 ├── scanners/    # shared family scanners such as clike, script, and markup
 └── builtins/    # one package per built-in language
 
@@ -133,7 +133,8 @@ Package ownership rules:
 12. Small related model clusters can live together. For example, comment options can share one file; a sealed interface can live with its small implementations.
 13. Numeric literal support belongs under `primitives/numbers/`, string-literal support under `primitives/strings/`, and qualified-name/comment/identifier/brace primitives live flat under `primitives/`.
 14. Embedded-language routing is request-based. Tokenizers call `TokenizeRequest.tokenizeEmbedded(...)`, span offset helpers live under `spans/`, and markup raw-text label resolution lives under `scanners/markup/`. Do not add a separate embedded-language engine package or a public callback type for this plumbing.
-15. Tests mirror source ownership: language fixtures under `builtins/fixtures/<language>/`, shared tokenizer mechanics under the matching top-level tokenizer package, and Compose tests under `compose/`.
+15. Built-in language aliases live under `language/BuiltInAliases.kt`, not `LanguageId.kt` or `routing/`. Keep aliases grouped by target `LanguageId` in `LanguageId.value` alphabetical order; languages without aliases are omitted.
+16. Tests mirror source ownership: language fixtures under `builtins/fixtures/<language>/`, shared tokenizer mechanics under the matching top-level tokenizer package, and Compose tests under `compose/`.
 
 Do not introduce host-app-specific naming prefixes or packages in SyntaxMP. Markdown is just one supported language here; library types stay library-centric.
 
@@ -188,6 +189,8 @@ Use the plain `TokenizeRequest` name for the per-call input packet; the `tokeniz
 Important public pure API surfaces live in `:syntaxmp-tokenizer`:
 
 - `com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer`
+- `com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer.languageIds`
+- `com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer.languageLabels`
 - `com.gallatinapps.syntaxmp.tokenizer.LanguageTokenizer`
 - `com.gallatinapps.syntaxmp.tokenizer.TokenizeRequest`
 - `com.gallatinapps.syntaxmp.language.LanguageId`
