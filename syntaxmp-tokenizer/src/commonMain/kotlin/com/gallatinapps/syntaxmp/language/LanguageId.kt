@@ -145,7 +145,7 @@ public value class LanguageId private constructor(
 
         internal fun resolve(label: String?): LanguageId? {
             val normalized = label.normalizeLanguageValue() ?: return null
-            return BuiltInAliases[normalized] ?: fromString(normalized)
+            return resolveBuiltInLanguageLabel(normalized) ?: fromString(normalized)
         }
 
         /**
@@ -166,74 +166,3 @@ internal fun String?.normalizeLanguageValue(): String? =
         ?.trim()
         ?.lowercase()
         ?.takeIf { it.isNotBlank() }
-
-private val BuiltInAliases: Map<String, LanguageId> = mapOf(
-    "js" to LanguageId.JavaScript,
-    "ts" to LanguageId.TypeScript,
-    "jsx" to LanguageId.Jsx,
-    "tsx" to LanguageId.Tsx,
-    "kt" to LanguageId.Kotlin,
-    "kts" to LanguageId.Kotlin,
-    "swift" to LanguageId.Swift,
-    "json" to LanguageId.Json,
-    "yml" to LanguageId.Yaml,
-    "yaml" to LanguageId.Yaml,
-    "toml" to LanguageId.Toml,
-    "csv" to LanguageId.Csv,
-    "md" to LanguageId.Markdown,
-    "markdown" to LanguageId.Markdown,
-    "sql" to LanguageId.Sql,
-    "sqlite" to LanguageId.Sqlite,
-    "sqlite3" to LanguageId.Sqlite,
-    "diff" to LanguageId.Diff,
-    "patch" to LanguageId.Diff,
-    "css" to LanguageId.Css,
-    "html" to LanguageId.Html,
-    "htm" to LanguageId.Html,
-    "xml" to LanguageId.Xml,
-    "ini" to LanguageId.Ini,
-    "properties" to LanguageId.Properties,
-    "env" to LanguageId.Dotenv,
-    "dotenv" to LanguageId.Dotenv,
-    "docker" to LanguageId.Dockerfile,
-    "dockerfile" to LanguageId.Dockerfile,
-    "containerfile" to LanguageId.Dockerfile,
-    "make" to LanguageId.Makefile,
-    "makefile" to LanguageId.Makefile,
-    "mk" to LanguageId.Makefile,
-    "graphql" to LanguageId.GraphQl,
-    "gql" to LanguageId.GraphQl,
-    "proto" to LanguageId.Protobuf,
-    "protobuf" to LanguageId.Protobuf,
-    "pgsql" to LanguageId.Postgresql,
-    "postgres" to LanguageId.Postgresql,
-    "postgresql" to LanguageId.Postgresql,
-    "py" to LanguageId.Python,
-    "python" to LanguageId.Python,
-    "rb" to LanguageId.Ruby,
-    "ruby" to LanguageId.Ruby,
-    "php" to LanguageId.Php,
-    "go" to LanguageId.Go,
-    "golang" to LanguageId.Go,
-    "rs" to LanguageId.Rust,
-    "rust" to LanguageId.Rust,
-    "dart" to LanguageId.Dart,
-    "gradle.kts" to LanguageId.Kotlin,
-    "c" to LanguageId.C,
-    "h" to LanguageId.C,
-    "cc" to LanguageId.Cpp,
-    "c++" to LanguageId.Cpp,
-    "cpp" to LanguageId.Cpp,
-    "cxx" to LanguageId.Cpp,
-    "hpp" to LanguageId.Cpp,
-    "cs" to LanguageId.CSharp,
-    "c#" to LanguageId.CSharp,
-    "csharp" to LanguageId.CSharp,
-    "sh" to LanguageId.Shell,
-    "shell" to LanguageId.Shell,
-    "bash" to LanguageId.Bash,
-    "zsh" to LanguageId.Zsh,
-    "ps" to LanguageId.PowerShell,
-    "ps1" to LanguageId.PowerShell,
-    "powershell" to LanguageId.PowerShell,
-)
