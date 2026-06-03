@@ -7,9 +7,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.SpanStyle
-import com.gallatinapps.syntaxmp.compose.theme.SyntaxRoleStyles
-import com.gallatinapps.syntaxmp.compose.theme.SyntaxStyle
-import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
 import com.gallatinapps.syntaxmp.language.LanguageId
 import com.gallatinapps.syntaxmp.language.LanguageExtension
 import com.gallatinapps.syntaxmp.role.SyntaxRole

@@ -2,7 +2,6 @@ package com.gallatinapps.syntaxmp.compose
 
 import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.ui.text.SpanStyle
-import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
 import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
 
 /**

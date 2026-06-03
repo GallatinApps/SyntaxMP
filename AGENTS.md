@@ -113,14 +113,13 @@ SyntaxMP source packages are split by module. The `engine/` umbrella is gone; th
 └── builtins/    # one package per built-in language
 
 :syntaxmp
-└── compose/       # Compose text helpers
-    └── theme/     # SyntaxStyle, SyntaxRoleStyles, SyntaxTheme
+└── compose/       # Compose text helpers, SyntaxStyle, SyntaxRoleStyles, SyntaxTheme
 ```
 
 Package ownership rules:
 
-1. The root `com.gallatinapps.syntaxmp` namespace has no flat Kotlin files. New pure tokenizer code belongs under `language/`, `role/`, `spans/`, `tokenizer/`, `primitives/`, `scanners/`, `routing/`, or `builtins/` in `:syntaxmp-tokenizer`. New Compose code belongs under `compose/` or `compose/theme/` in `:syntaxmp`.
-2. Public pure SyntaxMP APIs live under `language/`, `role/`, `spans/`, and `tokenizer/`. Public Compose APIs live in `compose/` or `compose/theme/`.
+1. The root `com.gallatinapps.syntaxmp` namespace has no flat Kotlin files. New pure tokenizer code belongs under `language/`, `role/`, `spans/`, `tokenizer/`, `primitives/`, `scanners/`, `routing/`, or `builtins/` in `:syntaxmp-tokenizer`. New Compose code belongs under `compose/` in `:syntaxmp`.
+2. Public pure SyntaxMP APIs live under `language/`, `role/`, `spans/`, and `tokenizer/`. Public Compose APIs live in `compose/`.
 3. New built-in languages get a lowercase, hyphenless package under `builtins/<normalized-id>/`.
 4. A language package owns its tokenizer, lexicon, language-specific scanner options, dedicated scanner, and language fixture tests.
 5. A scanner remains under `scanners/` only if at least two unrelated language packages use it and it has no consuming-language names or lexicons. Reuse by dialects/extensions of one primary language does not qualify.
@@ -199,26 +198,26 @@ Important public pure API surfaces live in `:syntaxmp-tokenizer`:
 - `com.gallatinapps.syntaxmp.role.rolePathValuesFromRoot`
 - `com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan`
 
-Important public Compose API surfaces live in `com.gallatinapps.syntaxmp.compose` and `com.gallatinapps.syntaxmp.compose.theme`:
+Important public Compose API surfaces live in `com.gallatinapps.syntaxmp.compose`:
 
 - `com.gallatinapps.syntaxmp.compose.SyntaxStyledSpan`
 - `com.gallatinapps.syntaxmp.compose.buildSyntaxStyledSpans`
 - `com.gallatinapps.syntaxmp.compose.applySyntaxStyledSpans`
 - `com.gallatinapps.syntaxmp.compose.buildSyntaxAnnotatedString`
 - `com.gallatinapps.syntaxmp.compose.rememberSyntaxAnnotatedString`
-- `com.gallatinapps.syntaxmp.compose.theme.SyntaxStyle`
-- `com.gallatinapps.syntaxmp.compose.theme.SyntaxRoleStyles`
-- `com.gallatinapps.syntaxmp.compose.theme.SyntaxRoleStyles.withRoleStyle`
-- `com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme`
-- `com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme.DefaultLight`
-- `com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme.DefaultDark`
-- `com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme.withRoleStyle`
-- `com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme.withLanguageRoleStyle`
-- `com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme.withLanguageRoleStyles`
+- `com.gallatinapps.syntaxmp.compose.SyntaxStyle`
+- `com.gallatinapps.syntaxmp.compose.SyntaxRoleStyles`
+- `com.gallatinapps.syntaxmp.compose.SyntaxRoleStyles.withRoleStyle`
+- `com.gallatinapps.syntaxmp.compose.SyntaxTheme`
+- `com.gallatinapps.syntaxmp.compose.SyntaxTheme.DefaultLight`
+- `com.gallatinapps.syntaxmp.compose.SyntaxTheme.DefaultDark`
+- `com.gallatinapps.syntaxmp.compose.SyntaxTheme.withRoleStyle`
+- `com.gallatinapps.syntaxmp.compose.SyntaxTheme.withLanguageRoleStyle`
+- `com.gallatinapps.syntaxmp.compose.SyntaxTheme.withLanguageRoleStyles`
 
 SyntaxMP is still pre-release. Direct API cleanup is acceptable when it improves the long-term library shape, but keep naming library-centric and update this file plus `README.md` when the public API changes.
 
-The authoritative public API reference lives in [`docs/api.md`](docs/api.md). **Any change that adds, removes, renames, or alters the signature of a public symbol must update `docs/api.md` in the same change.** This includes adding a built-in language constant on `LanguageId.Companion`, adding a role to `SyntaxRole`, adding a copy/override helper, or any new public function/class/extension under the public tokenizer packages, `com.gallatinapps.syntaxmp.compose`, or `com.gallatinapps.syntaxmp.compose.theme`. The doc is the curated index of the intended public surface; source remains the final source of truth, but drift between the two should be closed in the same PR.
+The authoritative public API reference lives in [`docs/api.md`](docs/api.md). **Any change that adds, removes, renames, or alters the signature of a public symbol must update `docs/api.md` in the same change.** This includes adding a built-in language constant on `LanguageId.Companion`, adding a role to `SyntaxRole`, adding a copy/override helper, or any new public function/class/extension under the public tokenizer packages or `com.gallatinapps.syntaxmp.compose`. The doc is the curated index of the intended public surface; source remains the final source of truth, but drift between the two should be closed in the same PR.
 
 Theme-author role documentation is split across two files: [`docs/syntax-roles.md`](docs/syntax-roles.md) (the roles primer: root and refinement constants, custom-role factories) and [`docs/languages.md`](docs/languages.md) (the per-language catalog of emitted roles, aliases, `LanguageId` constants, and embedded-language routing). Update `docs/languages.md` whenever built-in tokenizers add, remove, or rename emitted roles; update `docs/syntax-roles.md` when root or refinement constants change.
 

@@ -631,7 +631,7 @@ The theming model. The theme surface is deliberately narrow: foreground color + 
 
 ### `SyntaxStyle`
 
-Source: [SyntaxStyle.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/theme/SyntaxStyle.kt)
+Source: [SyntaxStyle.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/SyntaxStyle.kt)
 
 ```kotlin
 public data class SyntaxStyle(
@@ -673,7 +673,7 @@ Converts this `SyntaxStyle` into a Compose `SpanStyle` with the same three field
 
 ### `SyntaxRoleStyles`
 
-Source: [SyntaxRoleStyles.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/theme/SyntaxRoleStyles.kt)
+Source: [SyntaxRoleStyles.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/SyntaxRoleStyles.kt)
 
 ```kotlin
 public typealias SyntaxRoleStyles = Map<SyntaxRole, SyntaxStyle>
@@ -731,7 +731,7 @@ Returns a copy of the receiver with `style` set for `role`. Equivalent to `this 
 
 ### `SyntaxTheme`
 
-Source: [SyntaxTheme.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/theme/SyntaxTheme.kt)
+Source: [SyntaxTheme.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/SyntaxTheme.kt)
 
 ```kotlin
 public data class SyntaxTheme(

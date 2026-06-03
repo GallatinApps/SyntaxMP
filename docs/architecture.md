@@ -15,7 +15,7 @@ com.gallatinapps.syntaxmp:syntaxmp
   └─ api dependency on com.gallatinapps.syntaxmp:syntaxmp-tokenizer
 ```
 
-- `syntaxmp` is the Compose highlighter, it owns `compose/` and `compose/theme/`, and re-exports tokenizer types used by its public signatures.
+- `syntaxmp` is the Compose highlighter, it owns `compose/`, and re-exports tokenizer types used by its public signatures.
 - `syntaxmp-tokenizer` is the pure Kotlin tokenizer artifact for token-only or bring-your-own-renderer consumers. It owns `tokenizer/`, `language/`, `role/`, `spans/`, `routing/`, `primitives/`, `scanners/`, and `builtins/`.
 
 Stages 1-5 below live in `syntaxmp-tokenizer`. Stage 6 lives in `syntaxmp`.
@@ -45,7 +45,7 @@ host: (code: String, languageLabel: String?)
   │      → clean List<SyntaxTokenSpan>      (engine.tokenize boundary)
   │
   ▼
-[6] Theme + Compose styling                 compose/, compose/theme/
+[6] Theme + Compose styling                 compose/
          └─ SyntaxTheme.resolveSpanStyle(span) → SpanStyle
          → AnnotatedString  or  List<SyntaxStyledSpan>
 ```
