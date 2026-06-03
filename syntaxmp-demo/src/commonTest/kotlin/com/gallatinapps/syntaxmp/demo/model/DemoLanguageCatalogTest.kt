@@ -86,6 +86,23 @@ class DemoLanguageCatalogTest {
     }
 
     @Test
+    fun routeSegmentsAndAliasesResolveThroughSyntaxTokenizer() {
+        val engine = SyntaxTokenizer()
+
+        DemoLanguageCatalog.Languages.forEach { language ->
+            val labels = listOf(language.routeSegment) + language.aliases
+
+            labels.forEach { label ->
+                assertEquals(
+                    expected = language.id,
+                    actual = engine.resolveLanguageId(label),
+                    message = "Expected demo label $label to resolve to ${language.id.value}.",
+                )
+            }
+        }
+    }
+
+    @Test
     fun everySampleTokenizesIntoValidSpans() {
         val engine = SyntaxTokenizer()
 

@@ -21,12 +21,12 @@ kotlin {
 
 internal val BasicTextSample = """
 @Composable
-fun CodeBlock(code: String, language: String) {
+fun CodeBlock(code: String, languageLabel: String) {
     val engine = remember { SyntaxTokenizer() }
     BasicText(
         text = rememberSyntaxAnnotatedString(
             code = code,
-            languageLabel = language,
+            languageLabel = languageLabel,
             engine = engine,
             theme = SyntaxTheme.DefaultDark,
         ),
@@ -126,6 +126,8 @@ val enabledLanguages = setOf(
     LanguageId.Shell,
 )
 val engine = SyntaxTokenizer(builtInLanguages = enabledLanguages)
+val activeLanguageIds = engine.languageIds
+val activeLanguageLabels = engine.languageLabels
 """.trimIndent()
 
 
@@ -136,7 +138,7 @@ val engine = SyntaxTokenizer(
     extensions = listOf(
         LanguageExtension(
             languageId = myql,
-            aliases = setOf("mql"),
+            aliases = setOf("mql"), // Optional; "myql" is recognized from the id.
             tokenizer = myqlTokenizer, // Create a custom LanguageTokenizer
         ),
     ),
