@@ -267,7 +267,8 @@ Before cutting a release:
 4. Update demo-facing install snippets and displayed dependency versions, especially `syntaxmp-demo/src/commonMain/kotlin/com/gallatinapps/syntaxmp/demo/panes/GetStartedSamples.kt`.
 5. Search for stale snapshot or previous-version references in Gradle files, docs, README content, demo resources, and demo Kotlin samples.
 6. Verify both published coordinates are still configured for the same version: `com.gallatinapps.syntaxmp:syntaxmp` and `com.gallatinapps.syntaxmp:syntaxmp-tokenizer`.
-7. Run the full web/demo validation pass from the Testing section, plus `git diff --check`, before handing off the release prep.
+7. Remember that the public GitHub Pages demo deploys only from stable published releases. Keep demo-facing install snippets aligned with the latest stable Maven Central release until release prep updates both together.
+8. Run the full web/demo validation pass from the Testing section, plus `git diff --check`, before handing off the release prep.
 
 ## Adding a New Language
 
