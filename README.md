@@ -10,7 +10,7 @@ Purpose-built lexical tokenizers, role-based theming, and drop-in Compose text h
 [![Compose Multiplatform](https://img.shields.io/badge/Compose-1.11.0-4285F4?logo=jetpackcompose&logoColor=white)](https://www.jetbrains.com/compose-multiplatform/)
 [![Platforms](https://img.shields.io/badge/Platforms-JVM%20%7C%20Android%20%7C%20iOS%20%7C%20Wasm-blue)](#)
 [![Demo](https://img.shields.io/badge/demo-demo.syntaxmp.com-blue)](https://demo.syntaxmp.com)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue)](#)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue)](#)
 
 </div>
 
@@ -116,7 +116,7 @@ SyntaxMP targets **JVM**, **Android**, **iOS arm64**, **iOS simulator arm64**, a
 
 ```toml
 [versions]
-syntaxmpVersion = "0.2.0"
+syntaxmpVersion = "0.3.0"
 
 [libraries]
 syntaxmp = { module = "com.gallatinapps.syntaxmp:syntaxmp", version.ref = "syntaxmpVersion" }

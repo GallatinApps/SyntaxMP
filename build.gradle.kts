@@ -8,5 +8,5 @@ plugins {
 
 allprojects {
     group = "com.gallatinapps.syntaxmp"
-    version = "0.3.0-SNAPSHOT"
+    version = "0.3.0"
 }
