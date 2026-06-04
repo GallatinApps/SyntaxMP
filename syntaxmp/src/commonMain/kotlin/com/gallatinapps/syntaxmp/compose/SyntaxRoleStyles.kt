@@ -1,4 +1,4 @@
-package com.gallatinapps.syntaxmp.compose.theme
+package com.gallatinapps.syntaxmp.compose
 
 import com.gallatinapps.syntaxmp.role.SyntaxRole
 

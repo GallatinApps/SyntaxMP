@@ -81,7 +81,7 @@ lifecycle.
 
 ## Sharing the engine
 
-`SyntaxTokenizer` is the only stateful object in SyntaxMP, and its state is the precomputed routing map for built-ins plus your normalized extensions. Once constructed it's immutable and safe to share across compositions and threads.
+`SyntaxTokenizer` is the only stateful object in SyntaxMP, and its state is the enabled built-in set, host extensions, and precomputed active label map. Once constructed it's immutable and safe to share across compositions and threads.
 
 SyntaxMP deliberately doesn't ship a Composable helper for engine construction or a `CompositionLocal` for engine threading. Engine scope is a host-app decision. Most Compose apps should create one engine for the app's syntax configuration and pass it through their own app wiring.
 

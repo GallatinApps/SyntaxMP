@@ -3,10 +3,12 @@ package com.gallatinapps.syntaxmp.tokenizer
 import com.gallatinapps.syntaxmp.language.LanguageExtension
 import com.gallatinapps.syntaxmp.language.LanguageId
 import com.gallatinapps.syntaxmp.role.SyntaxRole
-import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SyntaxTokenizerLanguageApiTest {
@@ -23,6 +25,58 @@ class SyntaxTokenizerLanguageApiTest {
 
         assertTrue(spans.isNotEmpty())
         assertTrue(spans.all { it.languageId == LanguageId.Kotlin })
+    }
+
+    @Test
+    fun rejectsCustomIdsInBuiltInLanguages() {
+        val failure = assertFailsWith<IllegalArgumentException> {
+            SyntaxTokenizer(
+                builtInLanguages = setOf(LanguageId.fromString("astro")),
+            )
+        }
+        val message = failure.message.orEmpty()
+
+        assertTrue(message.contains("builtInLanguages must be a subset of LanguageId.BuiltIns"))
+        assertTrue(message.contains("Custom languages must be registered through LanguageExtension"))
+        assertTrue(message.contains("astro"))
+    }
+
+    @Test
+    fun languageCatalogReflectsActiveBuiltInsAndExtensions() {
+        val extensionLanguage = LanguageId.fromString("astro")
+        val engine = SyntaxTokenizer(
+            builtInLanguages = setOf(LanguageId.Kotlin),
+            extensions = listOf(
+                LanguageExtension(
+                    languageId = extensionLanguage,
+                    aliases = setOf(" Astro Component "),
+                    tokenizer = tokenizerWithRole(SyntaxRole.Function),
+                ),
+            ),
+        )
+
+        assertEquals(setOf(LanguageId.Kotlin, extensionLanguage), engine.languageIds)
+        assertTrue("kotlin" in engine.languageLabels)
+        assertTrue("kt" in engine.languageLabels)
+        assertTrue("kts" in engine.languageLabels)
+        assertTrue("gradle.kts" in engine.languageLabels)
+        assertTrue("astro" in engine.languageLabels)
+        assertTrue("astro component" in engine.languageLabels)
+        assertFalse("javascript" in engine.languageLabels)
+        assertFalse("js" in engine.languageLabels)
+    }
+
+    @Test
+    fun disabledBuiltInLanguagesAreRemovedFromCatalogAndResolution() {
+        val engine = SyntaxTokenizer(
+            builtInLanguages = LanguageId.BuiltIns - LanguageId.Kotlin,
+        )
+
+        assertFalse(LanguageId.Kotlin in engine.languageIds)
+        listOf("kotlin", "kt", "kts", "gradle.kts").forEach { label ->
+            assertFalse(label in engine.languageLabels)
+            assertNull(engine.resolveLanguageId(label))
+        }
     }
 
     @Test
@@ -160,7 +214,8 @@ class SyntaxTokenizerLanguageApiTest {
         )
 
         assertTrue(disabled.tokenize("val answer = 42", "kt").isEmpty())
-        assertEquals(SyntaxRole.Constant, overridden.tokenize("val answer = 42", "kt").single().role)
+        assertTrue(overridden.tokenize("val answer = 42", "kt").isEmpty())
+        assertEquals(SyntaxRole.Constant, overridden.tokenize("val answer = 42", "kotlin").single().role)
     }
 
     @Test
@@ -179,8 +234,8 @@ class SyntaxTokenizerLanguageApiTest {
         assertEquals(customLanguage, engine.resolveLanguageId("myql"))
         assertEquals(customLanguage, engine.resolveLanguageId("mql"))
         assertEquals(LanguageId.Kotlin, engine.resolveLanguageId("kt"))
-        assertEquals(LanguageId.fromString("unknown"), engine.resolveLanguageId("unknown"))
-        assertEquals(null, engine.resolveLanguageId(null))
-        assertEquals(null, engine.resolveLanguageId(" "))
+        assertNull(engine.resolveLanguageId("unknown"))
+        assertNull(engine.resolveLanguageId(null))
+        assertNull(engine.resolveLanguageId(" "))
     }
 }

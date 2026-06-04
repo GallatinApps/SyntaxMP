@@ -1,15 +1,21 @@
 package com.gallatinapps.syntaxmp.tokenizer
 
+import com.gallatinapps.syntaxmp.builtins.fixtures.defaultTestEngine
 import com.gallatinapps.syntaxmp.language.LanguageExtension
 import com.gallatinapps.syntaxmp.language.LanguageId
+import com.gallatinapps.syntaxmp.routing.builtInTokenizers
 import com.gallatinapps.syntaxmp.role.SyntaxRole
 import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
-import com.gallatinapps.syntaxmp.builtins.fixtures.defaultTestEngine
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SyntaxTokenizerRoutingTest {
+    @Test
+    fun builtInRegistryMatchesLanguageCatalog() {
+        assertEquals(LanguageId.BuiltIns, builtInTokenizers().keys)
+    }
+
     @Test
     fun defaultLanguageSetHasTokenizersForEveryLanguage() {
         val samples = mapOf(

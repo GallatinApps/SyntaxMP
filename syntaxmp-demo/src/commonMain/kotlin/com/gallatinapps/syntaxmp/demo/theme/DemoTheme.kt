@@ -3,9 +3,9 @@ package com.gallatinapps.syntaxmp.demo.theme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import com.gallatinapps.syntaxmp.compose.theme.SyntaxRoleStyles
-import com.gallatinapps.syntaxmp.compose.theme.SyntaxStyle
-import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
+import com.gallatinapps.syntaxmp.compose.SyntaxRoleStyles
+import com.gallatinapps.syntaxmp.compose.SyntaxStyle
+import com.gallatinapps.syntaxmp.compose.SyntaxTheme
 import com.gallatinapps.syntaxmp.language.LanguageId
 import com.gallatinapps.syntaxmp.role.SyntaxRole
 

@@ -3,7 +3,6 @@ package com.gallatinapps.syntaxmp.compose
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.AnnotatedString
-import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
 import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
 import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer
 

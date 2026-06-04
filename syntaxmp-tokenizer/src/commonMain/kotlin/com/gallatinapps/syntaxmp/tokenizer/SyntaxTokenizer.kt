@@ -2,9 +2,9 @@ package com.gallatinapps.syntaxmp.tokenizer
 
 import com.gallatinapps.syntaxmp.language.LanguageExtension
 import com.gallatinapps.syntaxmp.language.LanguageId
-import com.gallatinapps.syntaxmp.language.normalizeLanguageValue
+import com.gallatinapps.syntaxmp.language.builtInLanguageLabelsFor
+import com.gallatinapps.syntaxmp.language.trimAndLowercaseOrNull
 import com.gallatinapps.syntaxmp.routing.builtInTokenizers
-import com.gallatinapps.syntaxmp.routing.normalized
 import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
 import com.gallatinapps.syntaxmp.spans.normalizeTokenSpans
 
@@ -18,28 +18,41 @@ private const val MaxEmbeddedDepth = 3
  */
 public class SyntaxTokenizer(
     builtInLanguages: Set<LanguageId> = LanguageId.BuiltIns,
-    extensions: List<LanguageExtension> = emptyList(),
+    private val extensions: List<LanguageExtension> = emptyList(),
 ) {
+    init {
+        val invalidBuiltInLanguages = builtInLanguages - LanguageId.BuiltIns
+        require(invalidBuiltInLanguages.isEmpty()) {
+            val invalidValues = invalidBuiltInLanguages
+                .sortedBy { it.value }
+                .joinToString { it.value }
+            "builtInLanguages must be a subset of LanguageId.BuiltIns. " +
+                "Custom languages must be registered through LanguageExtension. " +
+                "Invalid values: $invalidValues."
+        }
+    }
+
     private val enabledBuiltInLanguages = builtInLanguages.toSet()
     private val builtInTokenizerMap = builtInTokenizers()
         .filterKeys { it in enabledBuiltInLanguages }
-    private val normalizedExtensions = extensions.map { it.normalized() }
+    private val languageLabelMap = buildLanguageLabelMap()
+
+    /** Language ids this tokenizer instance can tokenize. */
+    public val languageIds: Set<LanguageId> =
+        enabledBuiltInLanguages + extensions.map { it.languageId }
+
+    /** Normalized language labels this tokenizer instance recognizes. */
+    public val languageLabels: Set<String> = languageLabelMap.keys.toSet()
 
     /**
      * Resolves a raw language label to the canonical language id this engine would tokenize.
      *
-     * Walks extension exact ids, extension aliases, then built-in aliases and ids. Returns an
-     * exact custom id for an unknown non-blank label. Returns `null` for `null` or blank input.
+     * Walks labels active for this tokenizer instance. Returns `null` for `null`, blank, or
+     * unregistered labels.
      */
     public fun resolveLanguageId(languageLabel: String?): LanguageId? {
-        val normalized = languageLabel.normalizeLanguageValue() ?: return null
-        normalizedExtensions.firstOrNull { extension ->
-            normalized == extension.languageId.value
-        }?.let { return it.languageId }
-        normalizedExtensions.firstOrNull { extension ->
-            normalized in extension.aliases
-        }?.let { return it.languageId }
-        return LanguageId.resolve(normalized)
+        val labelKey = languageLabel.trimAndLowercaseOrNull() ?: return null
+        return languageLabelMap[labelKey]
     }
 
     /**
@@ -92,12 +105,38 @@ public class SyntaxTokenizer(
     }
 
     private fun resolveTokenizer(languageId: LanguageId): LanguageTokenizer? {
-        for (extension in normalizedExtensions) {
+        for (extension in extensions) {
             if (languageId == extension.languageId) {
                 return extension.tokenizer
             }
         }
 
         return builtInTokenizerMap[languageId]
+    }
+
+    private fun buildLanguageLabelMap(): Map<String, LanguageId> {
+        val labels = mutableMapOf<String, LanguageId>()
+        enabledBuiltInLanguages.forEach { languageId ->
+            builtInLanguageLabelsFor(languageId).forEach { label ->
+                labels[label] = languageId
+            }
+        }
+
+        val extensionAliases = mutableMapOf<String, LanguageId>()
+        extensions.forEach { extension ->
+            extension.aliases.forEach { alias ->
+                val aliasKey = alias.trimAndLowercaseOrNull()
+                if (aliasKey != null && aliasKey !in extensionAliases) {
+                    extensionAliases[aliasKey] = extension.languageId
+                }
+            }
+        }
+        labels.putAll(extensionAliases)
+
+        extensions.forEach { extension ->
+            labels[extension.languageId.value] = extension.languageId
+        }
+
+        return labels
     }
 }

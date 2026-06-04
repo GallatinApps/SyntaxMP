@@ -1,4 +1,4 @@
-package com.gallatinapps.syntaxmp.compose.theme
+package com.gallatinapps.syntaxmp.compose
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle

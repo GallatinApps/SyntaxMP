@@ -281,7 +281,7 @@ private fun LanguageSubsetSection(
         colors = colors,
     ) {
         BodyText(
-            text = "The default engine enables every built-in language. Apps can pass a smaller Set<LanguageId> when they only need a focused subset.",
+            text = "The default engine enables every built-in language. Apps can pass a smaller Set<LanguageId> to control which built-in ids, aliases, tokenizer implementations, and embedded routes are active.",
             colors = colors,
         )
         CodeExample(
@@ -305,7 +305,7 @@ private fun CustomLanguageSection(
         colors = colors,
     ) {
         BodyText(
-            text = "Implement LanguageTokenizer, wrap it in a LanguageExtension, register the extension on the engine, and your tokenizer runs alongside the built-ins:",
+            text = "Implement LanguageTokenizer, wrap it in a LanguageExtension, and register the extension on the engine. The extension id is recognized automatically; aliases add optional extra labels:",
             colors = colors,
         )
         CodeExample(
@@ -326,7 +326,7 @@ private fun FaqSection(colors: DemoColorScheme) {
     ) {
         FaqItem(
             question = "Does SyntaxMP auto-detect languages?",
-            answer = "No. Pass a language id or alias. Unknown labels return plain text instead of throwing.",
+            answer = "No. Pass an active language id or alias. Unknown labels return plain text instead of throwing.",
             colors = colors,
         )
         FaqItem(

@@ -59,21 +59,31 @@ Source: [SyntaxTokenizer.kt](../syntaxmp-tokenizer/src/commonMain/kotlin/com/gal
 public class SyntaxTokenizer(
     builtInLanguages: Set<LanguageId> = LanguageId.BuiltIns,
     extensions: List<LanguageExtension> = emptyList(),
-)
+) {
+    public val languageIds: Set<LanguageId>
+    public val languageLabels: Set<String>
+}
 ```
 
 **Purpose.** The tokenization entry point. Wraps the built-in routing table and any host-supplied extensions and turns `(code, languageLabel)` into a normalized list of token spans.
 
-**Description.** A `SyntaxTokenizer` is the only stateful object SyntaxMP constructs at runtime. The state is the precomputed map of enabled built-in languages plus the normalized extensions. Once constructed it's immutable and safe to share across compositions and threads. Construct one per app or per editor surface; there is no benefit to building a fresh engine per call site.
+**Description.** A `SyntaxTokenizer` is the only stateful object SyntaxMP constructs at runtime. The state is the enabled built-in language set, the host-supplied extensions, and the precomputed label map for this tokenizer instance. Once constructed it's immutable and safe to share across compositions and threads. Construct one per app or per editor surface; there is no benefit to building a fresh engine per call site.
 
-The engine is also the routing authority for embedded languages. When a tokenizer encounters embedded code (HTML script/style, Markdown fenced blocks, JSX/TSX script/style blocks, etc.) and calls `TokenizeRequest.tokenizeEmbedded(...)`, the request goes back through this engine, applying the same extension lookup rules. Recursive embedded-language tokenization is capped at depth 3 to prevent pathological loops.
+The engine is also the routing authority for embedded languages. When a tokenizer encounters embedded code (HTML script/style, Markdown fenced blocks, JSX/TSX script/style blocks, etc.) and calls `TokenizeRequest.tokenizeEmbedded(...)`, the request goes back through this engine, applying the same active label catalog. Recursive embedded-language tokenization is capped at depth 3 to prevent pathological loops.
 
 **Constructor parameters**
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| `builtInLanguages` | `Set<LanguageId>` | `LanguageId.BuiltIns` | Subset of built-in languages enabled for this engine. Languages outside this set return empty spans even if a label resolves to them. Used to shrink the enabled-language surface. |
+| `builtInLanguages` | `Set<LanguageId>` | `LanguageId.BuiltIns` | Subset of built-in languages enabled for this engine. This controls each built-in registration: its id, tokenizer implementation, and built-in aliases. Must be a subset of `LanguageId.BuiltIns`; register custom languages through `LanguageExtension`. |
 | `extensions` | `List<LanguageExtension>` | `emptyList()` | Host-supplied tokenizers. Extensions are checked in order before built-ins, so an extension covering `LanguageId.Kotlin` overrides the built-in Kotlin tokenizer. |
+
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| `languageIds` | `Set<LanguageId>` | Language ids this tokenizer instance can tokenize: enabled built-ins plus extension language ids. If an extension overrides an enabled built-in id, that id appears once. |
+| `languageLabels` | `Set<String>` | Normalized labels this tokenizer instance recognizes. Includes enabled built-in ids and aliases, extension language id values, and explicit extension aliases. Disabled built-in aliases are absent unless an extension explicitly claims the label. |
 
 **Methods**
 
@@ -83,7 +93,7 @@ The engine is also the routing authority for embedded languages. When a tokenize
 public fun resolveLanguageId(languageLabel: String?): LanguageId?
 ```
 
-Resolves a raw nullable label through this engine's extension and built-in policy: extension exact ids, extension aliases, built-in aliases/ids, then an exact custom id for unknown non-blank labels. Returns `null` if `languageLabel` is `null` or blank.
+Resolves a raw nullable label through this engine's active language catalog. Extension language id values and aliases participate, as do enabled built-in ids and aliases. Returns `null` if `languageLabel` is `null`, blank, unknown, or disabled for this tokenizer instance.
 
 Call this only when you need the canonical `LanguageId` before tokenizing. For tokenization itself, pass the raw label directly to `tokenize(...)`.
 
@@ -99,7 +109,7 @@ Returns `emptyList()` and never throws when:
 
 - `languageLabel` is `null`, empty, or blank.
 - `code.isEmpty()`.
-- the resolved language is not in the engine's enabled `builtInLanguages` set and no extension claims it.
+- the label is unknown or disabled for this tokenizer instance.
 - The selected tokenizer throws. The throwable is caught and replaced with empty spans.
 
 **Notes**
@@ -194,7 +204,7 @@ public value class LanguageId private constructor(public val value: String)
 1. **Built-in constants** on the companion (`LanguageId.Kotlin`, etc.) when the language is known at compile time.
 2. **`LanguageId.fromString(value)`** for exact custom language ids used by an extension. Does *not* honor aliases.
 
-For runtime raw labels (file extensions, Markdown fence info strings, user-config strings), use [`SyntaxTokenizer.resolveLanguageId`](#syntaxtokenizer) when you need the canonical `LanguageId` before tokenizing. It can see extension aliases as well as built-in aliases.
+For runtime raw labels (file extensions, Markdown fence info strings, user-config strings), use [`SyntaxTokenizer.resolveLanguageId`](#syntaxtokenizer) when you need the canonical `LanguageId` before tokenizing. It can see the labels active for that tokenizer instance, including extension aliases and enabled built-in aliases.
 
 The constructor normalizes by trimming whitespace and lowercasing. Equality is by the normalized `value` string, so `LanguageId.fromString("PYTHON")` equals `LanguageId.Python` after normalization.
 
@@ -227,7 +237,7 @@ Constructs an exact language id, bypassing alias resolution. Throws `IllegalArgu
 **Notes**
 
 - `LanguageId` is the type used for theme `languageOverrides` keys and for the `languageId` field on `SyntaxTokenSpan`. Hosts can `when` on `span.languageId` for per-language post-processing.
-- Built-in aliases include `js`, `ts`, `jsx`, `tsx`, `kt`, `kts`, `md`, `yml`, `pgsql`, `sqlite3`, `env`, `sh`, `bash`, `zsh`, and others. They are resolved by `SyntaxTokenizer`; see the source for the authoritative list.
+- Built-in aliases include `js`, `ts`, `jsx`, `tsx`, `kt`, `kts`, `md`, `yml`, `pgsql`, `sqlite3`, `env`, `sh`, `bash`, `zsh`, and others. They are resolved by `SyntaxTokenizer` only when the corresponding built-in language registration is enabled; see `BuiltInAliases.kt` for the authoritative list.
 
 **See also**: [`LanguageExtension`](#languageextension), [`SyntaxTokenSpan`](#syntaxtokenspan), [`SyntaxTheme`](#syntaxtheme).
 
@@ -249,7 +259,7 @@ public data class LanguageExtension(
 
 **Description.** An extension binds a `LanguageTokenizer` to one `LanguageId` value. The engine resolves extensions before built-ins, so an extension whose `languageId` is `LanguageId.Kotlin` overrides the built-in Kotlin tokenizer. Multiple extensions may be registered; resolution is first-match in the order they were passed to the engine.
 
-The optional `aliases` set adds host-defined labels that resolve to this extension's `languageId` at the engine boundary and when discovered inside source text. Typically Markdown fence labels (e.g. `mql` → `myql`) or markup raw-text `lang=` values.
+The extension language id value itself is always an active label for the tokenizer instance. The optional `aliases` set adds host-defined labels that also resolve to this extension's `languageId` at the engine boundary and when discovered inside source text. Typically Markdown fence labels (e.g. `mql` -> `myql`) or markup raw-text `lang=` values.
 
 **Fields**
 
@@ -262,8 +272,9 @@ The optional `aliases` set adds host-defined labels that resolve to this extensi
 **Notes**
 
 - One language per extension. If one tokenizer handles multiple languages, register multiple `LanguageExtension` entries that share the same tokenizer.
-- `aliases` entries are trimmed and lowercased when checked at runtime, so case in the set doesn't matter.
-- An extension can override a built-in alias by declaring the same id. For instance, registering an extension with `LanguageId.JavaScript` swaps out the built-in JS tokenizer entirely.
+- `aliases` entries are trimmed and lowercased when checked at runtime, so case in the set doesn't matter. Blank aliases are ignored.
+- An extension can override a built-in language by declaring the same id. If the built-in registration remains enabled, the extension tokenizer also receives the enabled built-in labels. If the built-in registration is disabled, only the extension language id value and explicit extension aliases are active.
+- Extension aliases can shadow built-in aliases for this tokenizer instance without changing the built-in language's canonical id label.
 
 **See also**: [`LanguageTokenizer`](#languagetokenizer), [`SyntaxTokenizer`](#syntaxtokenizer), and [language-extension.md](language-extension.md).
 
@@ -599,7 +610,7 @@ If `languageLabel` is `null` or blank, returns a plain `AnnotatedString(code)` w
 | Name | Type | Description |
 | --- | --- | --- |
 | `code` | `String` | Text to tokenize and annotate. |
-| `languageLabel` | `String?` | Raw label resolved by `engine`. Built-in aliases and extension aliases work. `null` or blank skips tokenization. |
+| `languageLabel` | `String?` | Raw label resolved by `engine`. Active built-in labels and extension labels work. `null`, blank, unknown, or disabled labels skip tokenization. |
 | `engine` | `SyntaxTokenizer` | Engine used for tokenization. Construct/hoist this however suits your scope (`remember`, host `CompositionLocal`, DI). |
 | `theme` | `SyntaxTheme` | Theme used to resolve role styles. Live changes restyle the cached spans without retokenizing. |
 
@@ -620,7 +631,7 @@ The theming model. The theme surface is deliberately narrow: foreground color + 
 
 ### `SyntaxStyle`
 
-Source: [SyntaxStyle.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/theme/SyntaxStyle.kt)
+Source: [SyntaxStyle.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/SyntaxStyle.kt)
 
 ```kotlin
 public data class SyntaxStyle(
@@ -662,7 +673,7 @@ Converts this `SyntaxStyle` into a Compose `SpanStyle` with the same three field
 
 ### `SyntaxRoleStyles`
 
-Source: [SyntaxRoleStyles.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/theme/SyntaxRoleStyles.kt)
+Source: [SyntaxRoleStyles.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/SyntaxRoleStyles.kt)
 
 ```kotlin
 public typealias SyntaxRoleStyles = Map<SyntaxRole, SyntaxStyle>
@@ -720,7 +731,7 @@ Returns a copy of the receiver with `style` set for `role`. Equivalent to `this 
 
 ### `SyntaxTheme`
 
-Source: [SyntaxTheme.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/theme/SyntaxTheme.kt)
+Source: [SyntaxTheme.kt](../syntaxmp/src/commonMain/kotlin/com/gallatinapps/syntaxmp/compose/SyntaxTheme.kt)
 
 ```kotlin
 public data class SyntaxTheme(
@@ -876,7 +887,7 @@ The contract: `engine.tokenize(code = code, languageLabel = languageLabel)` alwa
 
 ### Embedded-language recursion
 
-When a tokenizer encounters embedded content (HTML script/style, Markdown fenced blocks, JSX/TSX script/style regions, or a custom extension's own child regions), it can route the inner content back through the engine with `TokenizeRequest.tokenizeEmbedded(...)`, which re-applies extension lookup. Recursion is capped at depth 3. A document with deeper nesting renders the deepest layer as plain text rather than continuing to recurse.
+When a tokenizer encounters embedded content (HTML script/style, Markdown fenced blocks, JSX/TSX script/style regions, or a custom extension's own child regions), it can route the inner content back through the engine with `TokenizeRequest.tokenizeEmbedded(...)`, which re-applies the active label catalog. Recursion is capped at depth 3. A document with deeper nesting renders the deepest layer as plain text rather than continuing to recurse.
 
 ### Role value stability and language labels
 

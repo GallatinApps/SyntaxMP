@@ -5,7 +5,7 @@ import androidx.compose.foundation.text.input.toTextFieldBuffer
 import com.gallatinapps.syntaxmp.compose.applySyntaxStyledSpans
 import com.gallatinapps.syntaxmp.compose.buildSyntaxAnnotatedString
 import com.gallatinapps.syntaxmp.compose.buildSyntaxStyledSpans
-import com.gallatinapps.syntaxmp.compose.theme.SyntaxTheme
+import com.gallatinapps.syntaxmp.compose.SyntaxTheme
 import com.gallatinapps.syntaxmp.language.LanguageId
 import com.gallatinapps.syntaxmp.spans.SyntaxTokenSpan
 import com.gallatinapps.syntaxmp.tokenizer.SyntaxTokenizer

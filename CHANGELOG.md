@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-04
+
+### Added
+
+- Added `SyntaxTokenizer.languageIds` and `SyntaxTokenizer.languageLabels` so hosts can inspect the language ids and raw labels recognized by a tokenizer instance.
+
+### Changed
+
+- **Breaking:** Changed `SyntaxTokenizer.resolveLanguageId(...)` to resolve only labels active for that tokenizer instance. Unknown, disabled, blank, or null labels now resolve to `null` instead of creating custom `LanguageId` values.
+- **Breaking:** Moved `SyntaxStyle`, `SyntaxRoleStyles`, and `SyntaxTheme` from `com.gallatinapps.syntaxmp.compose.theme` into `com.gallatinapps.syntaxmp.compose`.
+- Built-in language aliases now participate in the tokenizer instance catalog, so disabled built-in aliases are not recognized unless an extension claims them.
+
+### Internal
+
+- Restricted demo deployment to non-prerelease published releases whose stable `vX.Y.Z` tag matches the exact Gradle project version.
+
 ## [0.2.0] - 2026-06-02
 
 ### Added
@@ -29,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Compose helpers for display text, editable text, custom languages, and syntax themes.
 - Hosted Kotlin/Wasm demo.
 
-[Unreleased]: https://github.com/GallatinApps/SyntaxMP/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/GallatinApps/SyntaxMP/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/GallatinApps/SyntaxMP/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/GallatinApps/SyntaxMP/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/GallatinApps/SyntaxMP/releases/tag/v0.1.0
